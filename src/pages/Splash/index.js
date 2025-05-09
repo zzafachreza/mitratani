@@ -39,7 +39,7 @@ export default function Splash({ navigation }) {
 
   
     setTimeout(() => {
-      navigation.replace("Login");
+      navigation.replace("MainApp");
     }, 1200);
   }, []);
 

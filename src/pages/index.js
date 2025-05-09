@@ -19,6 +19,8 @@ import TambahPetani from './TambahData/tambah';
 import TambahTransaksi from './TambahTransaksi';
 import DataLaporan from './DataLaporan';
 import BackupRestore from './BackupPage';
+import Royalti from './Loyalty';
+
 
 
 export {
@@ -43,7 +45,7 @@ export {
 TambahTransaksi,
 DataLaporan,
 BackupRestore,
-
+Royalti,
 
 
   

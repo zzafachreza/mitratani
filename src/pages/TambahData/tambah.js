@@ -35,7 +35,7 @@ import {
         setModalVisible(true);
         setTimeout(() => {
           setModalVisible(false);
-          navigation.replace('DataPetani');
+          navigation.navigate('DataPetani');
         }, 1500); // modal tampil 1.5 detik
       } catch (error) {
         console.log(error);

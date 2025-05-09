@@ -1,58 +1,72 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Modal, ImageBackground } from 'react-native';
-import { MyDimensi, colors, fonts, windowWidth, Color } from '../../utils';
+import React from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from 'react-native';
+import { colors, fonts } from '../../utils';
 import { useNavigation } from '@react-navigation/native';
 import { Icon } from 'react-native-elements';
-import { getData } from '../../utils/localStorage';
-import MyMenu from '../MyMenu';
-export default function MyHeader({ onPress, color = colors.white, title, icon = false, iconname = 'search' }) {
+
+export default function MyHeader({
+  onPress,
+  color = colors.white,
+  title,
+  icon = false,
+  iconname = 'search',
+}) {
   const navigation = useNavigation();
+
   return (
-
-
-    <ImageBackground source={require('../../assets/bgheader.png')} style={{
-      marginTop: 0,
-      marginHorizontal: 0,
-      flexDirection: 'row',
-      alignItems: 'flex-end',
-      paddingVertical: 20,
-      backgroundColor: colors.primary,
-      padding: 20,
-      justifyContent: 'center',
-
-
-    }}>
-
-      <TouchableOpacity onPress={() => navigation.goBack()} style={{
-
-
-        justifyContent: 'center',
+    <View
+      style={{
+        flexDirection: 'row',
         alignItems: 'center',
-        padding: 10,
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        backgroundColor: colors.primary,
+        justifyContent: 'space-between',
       }}>
-        <Icon type='ionicon' name='arrow-back-outline' size={20} color={color} />
+      
+      {/* Tombol Back */}
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={{
+          width: 40,
+          height: 40,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <Icon type="ionicon" name="arrow-back-outline" size={22} color={color} />
       </TouchableOpacity>
 
+      {/* Judul */}
+      <View style={{ flex: 1, paddingHorizontal: 10 }}>
+        <Text
+          style={{
+            ...fonts.headline2,
+            color: color,
+            textAlign: 'center',
+            flexWrap: 'wrap',
+          }}
+          numberOfLines={2}
+          ellipsizeMode="tail">
+          {title}
+        </Text>
+      </View>
 
-      <Text style={{
-        ...fonts.headline2,
-        flex: 1,
-        textAlign: 'center',
-        marginLeft: -20,
-
-        color: color
-      }}>{title}</Text>
-
-      {icon &&
-        <TouchableOpacity onPress={onPress} style={{
-
+      {/* Icon kanan opsional */}
+      <TouchableOpacity
+        onPress={onPress}
+        style={{
+          width: 40,
+          height: 40,
+          justifyContent: 'center',
+          alignItems: 'center',
         }}>
-          <Icon name={iconname} size={20} color={color} />
-        </TouchableOpacity>
-      }
-    </ImageBackground>
-
+        {icon && <Icon name={iconname} size={22} color={color} />}
+      </TouchableOpacity>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({});

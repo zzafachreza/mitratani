@@ -159,8 +159,8 @@ export default function DataPetani({ navigation }) {
             marginBottom: 0,
             padding:0,
             position: 'absolute',
-            bottom:15,
-            left:29
+            bottom:50,
+            right:30
           }}>
           <TouchableNativeFeedback onPress={() => navigation.navigate('TambahPetani')}>
             <View

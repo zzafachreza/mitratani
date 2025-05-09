@@ -104,7 +104,7 @@ export default function Home({ navigation, route }) {
                 <Image style={{
                   width:81,
                   height:67,
-                  alicnSelf:"center",
+                  alignSelf:"center",
                 }} source={require('../../assets/tambahdata.png')}/>
                 <Text style={{
                   fontSize:12,
@@ -129,7 +129,7 @@ export default function Home({ navigation, route }) {
                 <Image style={{
                   width:54,
                   height:67,
-                  alicnSelf:"center",
+                  alignSelf:"center",
                 }} source={require('../../assets/datalaporan.png')}/>
                 <Text style={{
                   fontSize:12,
@@ -153,7 +153,7 @@ export default function Home({ navigation, route }) {
             marginTop:20,
           }}>
 
-            <TouchableNativeFeedback>
+            <TouchableNativeFeedback onPress={() => navigation.navigate('BackupRestore')}>
               <View style={{
                 padding:10,
                 backgroundColor:colors.primary,
@@ -166,8 +166,8 @@ export default function Home({ navigation, route }) {
                 <Image style={{
                   width:54,
                   height:67,
-                  alicnSelf:"center",
-                }} source={require('../../assets/backup.png')}/>
+                  alignSelf:"center",
+                }} source={require('../../assets/backup2.png')}/>
                 <Text style={{
                   fontSize:12,
                   textAlign:"center",
@@ -179,7 +179,7 @@ Restore Data</Text>
               </View>
             </TouchableNativeFeedback>
 
-            <TouchableNativeFeedback>
+            <TouchableNativeFeedback onPress={() => navigation.navigate('Royalti')}>
               <View style={{
                 padding:10,
                 backgroundColor:colors.primary,
@@ -192,7 +192,7 @@ Restore Data</Text>
                 <Image style={{
                   width:91,
                   height:67,
-                  alicnSelf:"center",
+                  alignSelf:"center",
                 }} source={require('../../assets/rangkin.png')}/>
                 <Text style={{
                   fontSize:12,
