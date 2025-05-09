@@ -11,6 +11,7 @@ import { MyCalendar, MyHeader, MyInput } from '../../components';
 import { colors, fonts } from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
+import { Picker } from '@react-native-picker/picker';
 
 const formatRupiah = (angka) => {
   if (!angka) return '0';
@@ -25,14 +26,12 @@ const formatRupiah = (angka) => {
   return 'Rp' + (split[1] !== undefined ? rupiah + ',' + split[1] : rupiah);
 };
 
-
 const parseNumber = (str) => {
   return parseInt(str.replace(/[^0-9]/g, '')) || 0;
 };
 
 export default function TambahTransaksi({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
-
   const [tanggal, setTanggal] = useState('');
   const [namaPetani, setNamaPetani] = useState('');
   const [kasAwal, setKasAwal] = useState('');
@@ -41,14 +40,23 @@ export default function TambahTransaksi({ navigation }) {
   const [pemasukan, setPemasukan] = useState('');
   const [pengeluaran, setPengeluaran] = useState('');
   const [kasModal, setKasModal] = useState('Rp0');
+  const [pilihRumus, setPilihRumus] = useState('pemasukan');
 
-  // Perhitungan otomatis kasModal
   useEffect(() => {
-    const total =
-      parseNumber(kasAwal) + parseNumber(pemasukan) - parseNumber(pengeluaran);
-    setKasModal(formatRupiah(total.toString())); // tanpa "Rp" lagi
-  }, [kasAwal, pemasukan, pengeluaran]);
-  
+    const awal = parseNumber(kasAwal);
+    const masuk = parseNumber(pemasukan);
+    const keluar = parseNumber(pengeluaran);
+    let total = awal;
+    if (masuk && keluar) {
+      total = pilihRumus === 'pemasukan' ? awal + masuk : awal - keluar;
+    } else if (masuk) {
+      total = awal + masuk;
+    } else if (keluar) {
+      total = awal - keluar;
+    }
+    setKasModal(formatRupiah(total.toString()));
+  }, [kasAwal, pemasukan, pengeluaran, pilihRumus]);
+
   const simpanTransaksi = async () => {
     const data = {
       tanggal,
@@ -142,6 +150,28 @@ export default function TambahTransaksi({ navigation }) {
             keyboardType="numeric"
             onChangeText={(val) => setPengeluaran(formatRupiah(val))}
           />
+
+          {(pemasukan && pengeluaran) ? (
+            <View style={{ marginVertical: 10 }}>
+              <Text style={{ fontFamily: fonts.primary[600], marginBottom: 6 }}>
+                Gunakan perhitungan dari:
+              </Text>
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  borderRadius: 10,
+                  overflow: 'hidden',
+                }}>
+                <Picker
+                  selectedValue={pilihRumus}
+                  onValueChange={(itemValue) => setPilihRumus(itemValue)}>
+                  <Picker.Item label="Pemasukan" value="pemasukan" />
+                  <Picker.Item label="Pengeluaran" value="pengeluaran" />
+                </Picker>
+              </View>
+            </View>
+          ) : null}
 
           <MyInput
             label="Kas/Modal :"
