@@ -13,11 +13,7 @@ import {
 import { getData } from '../../utils/localStorage';
 import { colors, fonts, windowWidth } from '../../utils';
 
-const images = [
-  { id: 1, src: require('../../assets/korosel-1.png'), label: 'Gambar 1' },
-  { id: 2, src: require('../../assets/koresel-2.png'), label: 'Gambar 2' },
-  { id: 3, src: require('../../assets/koresel-3.png'), label: 'Gambar 3' },
-];
+
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -50,11 +46,11 @@ export default function Home({ navigation, route }) {
     >
       <ScrollView>
         <View style={{ padding: 20 }}>
-         
+
           <Text style={{
-            fontFamily:fonts.primary[500],
-            color:colors.primary,
-            fontSize:18
+            fontFamily: fonts.primary[500],
+            color: colors.primary,
+            fontSize: 18
           }}>Selamat Datang</Text>
 
           <View style={{
@@ -64,79 +60,80 @@ export default function Home({ navigation, route }) {
             marginTop: 10,
           }}>
             <Image style={{
-              height:24,
-              width:200,
-            }} source={require('../../assets/tekslogo.png')}/>
+              height: 24,
+              width: 200,
+            }} source={require('../../assets/tekslogo.png')} />
             <Image style={{
-              width:94,
-              height:42,
-            }} source={require('../../assets/logo.png')}/>
+              width: 94,
+              height: 42,
+            }} source={require('../../assets/logo.png')} />
           </View>
 
           <View style={{
-            justifyContent:"center",
-            alignItems:"center",
-            marginTop:20
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 20
           }}>
-          <Image style={{
-            width:330,
-            height:265
-          }} source={require('../../assets/slider1.png')}/>
+            <Image style={{
+              width: windowWidth - 40,
+              height: 200,
+              borderRadius: 20,
+            }} source={require('../../assets/slider1.png')} />
           </View>
 
           <View style={{
-            flexDirection:"row",
-            justifyContent:"space-between",
-            alignItems:"center",
-            marginTop:20,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 20,
           }}>
 
             <TouchableNativeFeedback onPress={() => navigation.navigate('TambahData')}>
               <View style={{
-                padding:10,
-                backgroundColor:colors.primary,
-                borderRadius:10,
-                alignItems:"center",
-                justifyContent:"center",
-                width:150,
-                height:133
+                padding: 10,
+                backgroundColor: colors.primary,
+                borderRadius: 10,
+                alignItems: "center",
+                justifyContent: "center",
+                width: 150,
+                height: 133
               }}>
                 <Image style={{
-                  width:81,
-                  height:67,
-                  alignSelf:"center",
-                }} source={require('../../assets/tambahdata.png')}/>
+                  width: 81,
+                  height: 67,
+                  alignSelf: "center",
+                }} source={require('../../assets/tambahdata.png')} />
                 <Text style={{
-                  fontSize:12,
-                  textAlign:"center",
-                  fontFamily:fonts.primary[500],
-                  color:colors.white,
-                  marginTop:10,
+                  fontSize: 12,
+                  textAlign: "center",
+                  fontFamily: fonts.primary[500],
+                  color: colors.white,
+                  marginTop: 10,
                 }}>Tambah Data</Text>
               </View>
             </TouchableNativeFeedback>
 
             <TouchableNativeFeedback onPress={() => navigation.navigate('DataLaporan')}>
               <View style={{
-                padding:10,
-                backgroundColor:colors.primary,
-                borderRadius:10,
-                alignItems:"center",
-                justifyContent:"center",
-                width:150,
-                height:133
+                padding: 10,
+                backgroundColor: colors.primary,
+                borderRadius: 10,
+                alignItems: "center",
+                justifyContent: "center",
+                width: 150,
+                height: 133
               }}>
                 <Image style={{
-                  width:54,
-                  height:67,
-                  alignSelf:"center",
-                }} source={require('../../assets/datalaporan.png')}/>
+                  width: 54,
+                  height: 67,
+                  alignSelf: "center",
+                }} source={require('../../assets/datalaporan.png')} />
                 <Text style={{
-                  fontSize:12,
-                  textAlign:"center",
-                  fontFamily:fonts.primary[500],
-                  color:colors.white,
-                  marginTop:10,
+                  fontSize: 12,
+                  textAlign: "center",
+                  fontFamily: fonts.primary[500],
+                  color: colors.white,
+                  marginTop: 10,
                 }}>Data Laporan</Text>
               </View>
             </TouchableNativeFeedback>
@@ -147,59 +144,59 @@ export default function Home({ navigation, route }) {
 
 
           <View style={{
-            flexDirection:"row",
-            justifyContent:"space-between",
-            alignItems:"center",
-            marginTop:20,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 20,
           }}>
 
             <TouchableNativeFeedback onPress={() => navigation.navigate('BackupRestore')}>
               <View style={{
-                padding:10,
-                backgroundColor:colors.primary,
-                borderRadius:10,
-                alignItems:"center",
-                justifyContent:"center",
-                width:150,
-                height:133
+                padding: 10,
+                backgroundColor: colors.primary,
+                borderRadius: 10,
+                alignItems: "center",
+                justifyContent: "center",
+                width: 150,
+                height: 133
               }}>
                 <Image style={{
-                  width:54,
-                  height:67,
-                  alignSelf:"center",
-                }} source={require('../../assets/backup2.png')}/>
+                  width: 54,
+                  height: 67,
+                  alignSelf: "center",
+                }} source={require('../../assets/backup2.png')} />
                 <Text style={{
-                  fontSize:12,
-                  textAlign:"center",
-                  fontFamily:fonts.primary[500],
-                  color:colors.white,
-                  marginTop:10,
+                  fontSize: 12,
+                  textAlign: "center",
+                  fontFamily: fonts.primary[500],
+                  color: colors.white,
+                  marginTop: 10,
                 }}>Back Up &{'\n'}
-Restore Data</Text>
+                  Restore Data</Text>
               </View>
             </TouchableNativeFeedback>
 
             <TouchableNativeFeedback onPress={() => navigation.navigate('Royalti')}>
               <View style={{
-                padding:10,
-                backgroundColor:colors.primary,
-                borderRadius:10,
-                alignItems:"center",
-                justifyContent:"center",
-                width:150,
-                height:133
+                padding: 10,
+                backgroundColor: colors.primary,
+                borderRadius: 10,
+                alignItems: "center",
+                justifyContent: "center",
+                width: 150,
+                height: 133
               }}>
                 <Image style={{
-                  width:91,
-                  height:67,
-                  alignSelf:"center",
-                }} source={require('../../assets/rangkin.png')}/>
+                  width: 91,
+                  height: 67,
+                  alignSelf: "center",
+                }} source={require('../../assets/rangkin.png')} />
                 <Text style={{
-                  fontSize:12,
-                  textAlign:"center",
-                  fontFamily:fonts.primary[500],
-                  color:colors.white,
-                  marginTop:10,
+                  fontSize: 12,
+                  textAlign: "center",
+                  fontFamily: fonts.primary[500],
+                  color: colors.white,
+                  marginTop: 10,
                 }}>Ranking Loyalty</Text>
               </View>
             </TouchableNativeFeedback>

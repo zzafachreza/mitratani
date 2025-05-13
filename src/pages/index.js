@@ -20,12 +20,16 @@ import TambahTransaksi from './TambahTransaksi';
 import DataLaporan from './DataLaporan';
 import BackupRestore from './BackupPage';
 import Royalti from './Loyalty';
+import EditTransaksi from './TambahTransaksi/EditTransaksi';
+import PetaniDetail from './TambahData/PetaniDetail';
 
 
 
 export {
   Splash,
   Home,
+  PetaniDetail,
+  EditTransaksi,
   Login,
   Account,
   AccountEdit,
@@ -42,12 +46,12 @@ export {
   TambahData,
   DataPetani,
   TambahPetani,
-TambahTransaksi,
-DataLaporan,
-BackupRestore,
-Royalti,
+  TambahTransaksi,
+  DataLaporan,
+  BackupRestore,
+  Royalti,
 
 
-  
+
 
 };

@@ -13,7 +13,7 @@ export default function MyPicker({
 }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(data[0]);  // Default selected item
-  
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.itemContainer}
@@ -46,11 +46,11 @@ export default function MyPicker({
         onPress={() => setModalVisible(true)}
       >
         <View style={styles.iconContainer}>
-          <Icon type="ionicon" name={iconname} color={Color.blueGray[300]} size={24} />
+          <Icon type="ionicon" name={iconname} color={colors.black} size={22} />
         </View>
         {/* Menampilkan nilai yang dipilih atau teks placeholder */}
         <Text style={styles.selectedText}>
-          {selectedItem ? selectedItem.label : 'Select an option'}
+          {selectedItem ? selectedItem.label : 'Silahkan pilih'}
         </Text>
         <View style={styles.iconContainer}>
           <Icon type="ionicon" name="caret-down-outline" color={Color.blueGray[300]} size={24} />
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 30,
     borderColor: Color.blueGray[300],
-    minHeight: 60,  // Atur minimum height supaya cukup untuk teks panjang
+    minHeight: 40,  // Atur minimum height supaya cukup untuk teks panjang
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
@@ -98,7 +98,8 @@ const styles = StyleSheet.create({
   },
   selectedText: {
     flex: 8,
-    fontSize: 14,
+    fontSize: 12,
+    lineHeight: 26,
     fontFamily: fonts.primary[500],
     color: colors.primary,
     textAlign: 'left',  // Teks diatur agar di kiri

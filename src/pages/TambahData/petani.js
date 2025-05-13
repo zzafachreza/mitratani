@@ -7,6 +7,7 @@ import {
   Modal,
   TextInput,
   Alert,
+  FlatList,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { MyHeader } from '../../components';
@@ -14,6 +15,8 @@ import { Icon } from 'react-native-elements';
 import QRCode from 'react-native-qrcode-svg';
 import { fonts, colors } from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getData, storeData } from '../../utils/localStorage';
+import moment from 'moment';
 
 export default function DataPetani({ navigation }) {
   const [data, setData] = useState([]);
@@ -21,40 +24,39 @@ export default function DataPetani({ navigation }) {
   const [editIndex, setEditIndex] = useState(null);
   const [editNama, setEditNama] = useState('');
 
-  const getData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('DATA_PETANI');
-      if (jsonValue !== null) {
-        setData(JSON.parse(jsonValue));
-      }
-    } catch (e) {
-      console.log('Gagal ambil data petani', e);
-    }
+  const getPetani = async () => {
+    getData('petani').then(res => {
+      console.log(res);
+      const tmp = res ? res : [];
+      setData(tmp);
+    })
   };
 
   const simpanEdit = async () => {
-    if (editNama.length === 0) {
-      Alert.alert('Validasi', 'Nama petani tidak boleh kosong');
-      return;
-    }
 
-    const dataBaru = [...data];
-    dataBaru[editIndex] = {
-      nama: editNama,
-      value: `petani_${editNama.toLowerCase().replace(/\s/g, '')}`,
-    };
+    getData('petani').then(res => {
+      let tmp = res ? res : []; // 
+      let updated = [...tmp];
+      updated[editIndex] = {
+        ...updated[editIndex],
+        nama: editNama,
+        last_update: moment().format('YYYYMMDDHHmmss'),
+      };
 
-    try {
-      await AsyncStorage.setItem('DATA_PETANI', JSON.stringify(dataBaru));
-      setData(dataBaru);
+      // Simpan kembali ke localStorage
+      storeData('petani', updated);
       setModalVisible(false);
-    } catch (error) {
-      Alert.alert('Gagal', 'Tidak bisa menyimpan perubahan');
-    }
+      getPetani();
+
+    })
+
   };
 
+
+
+
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', getData);
+    const unsubscribe = navigation.addListener('focus', getPetani);
     return unsubscribe;
   }, [navigation]);
 
@@ -72,8 +74,8 @@ export default function DataPetani({ navigation }) {
             const dataBaru = [...data];
             dataBaru.splice(index, 1);
             try {
-              await AsyncStorage.setItem('DATA_PETANI', JSON.stringify(dataBaru));
-              setData(dataBaru);
+              storeData('petani', dataBaru);
+              getPetani();
             } catch (e) {
               Alert.alert('Gagal', 'Tidak bisa menghapus data');
             }
@@ -82,23 +84,26 @@ export default function DataPetani({ navigation }) {
       ]
     );
   };
-  
+
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <MyHeader title="Data Petani" />
 
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
-        {data.length === 0 && (
-          <Text style={{ textAlign: 'center', fontStyle: 'italic', marginTop: 40 }}>
-            Belum ada data petani
-          </Text>
-        )}
 
-        {data.map((item, index) => (
+      {data.length === 0 && (
+        <Text style={{ textAlign: 'center', fontStyle: 'italic', marginTop: 40 }}>
+          Belum ada data petani
+        </Text>
+      )}
+
+      <FlatList data={data} renderItem={({ item, index }) => {
+        return (
           <View
             key={index}
             style={{
+              marginVertical: 10,
+              marginHorizontal: 10,
               backgroundColor: '#fafafa',
               borderRadius: 12,
               marginBottom: 16,
@@ -114,6 +119,16 @@ export default function DataPetani({ navigation }) {
             <Text
               style={{
                 fontSize: 13,
+                fontFamily: fonts.primary[400],
+              }}>
+              ID:{' '}
+              <Text style={{ fontWeight: '800', color: colors.primary }}>
+                {item.id}
+              </Text>
+            </Text>
+            <Text
+              style={{
+                fontSize: 13,
                 marginBottom: 8,
                 fontFamily: fonts.primary[400],
               }}>
@@ -124,7 +139,7 @@ export default function DataPetani({ navigation }) {
             </Text>
 
             <View style={{ alignItems: 'center', marginVertical: 8 }}>
-              <QRCode value={item.value} size={120} />
+              <QRCode value={item.id} size={120} />
             </View>
 
             <View
@@ -133,6 +148,15 @@ export default function DataPetani({ navigation }) {
                 justifyContent: 'flex-end',
                 marginTop: 8,
               }}>
+              <TouchableOpacity
+                style={{ marginRight: 12 }}
+                onPress={() => {
+                  navigation.navigate('PetaniDetail', {
+                    id_petani: item.id
+                  })
+                }}>
+                <Icon type="ionicon" name="search" size={20} color={colors.primary} />
+              </TouchableOpacity>
               <TouchableOpacity
                 style={{ marginRight: 12 }}
                 onPress={() => {
@@ -147,36 +171,37 @@ export default function DataPetani({ navigation }) {
               </TouchableOpacity>
             </View>
           </View>
-        ))}
+        )
+      }}
+      />
 
-       
-      </ScrollView>
- {/* Tombol tambah di bawah */}
- <View
-          style={{
-            alignItems: 'flex-end',
-            marginTop: 10,
-            marginBottom: 0,
-            padding:0,
-            position: 'absolute',
-            bottom:50,
-            right:30
-          }}>
-          <TouchableNativeFeedback onPress={() => navigation.navigate('TambahPetani')}>
-            <View
-              style={{
-                padding: 10,
-                backgroundColor: colors.primary,
-                borderRadius: 50,
-                width: 50, 
-                height: 50,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Icon type="ionicon" name="add" color={colors.white} size={25} />
-            </View>
-          </TouchableNativeFeedback>
-        </View>
+
+      {/* Tombol tambah di bawah */}
+      <View
+        style={{
+          alignItems: 'flex-end',
+          marginTop: 10,
+          marginBottom: 0,
+          padding: 0,
+          position: 'absolute',
+          bottom: 50,
+          right: 30
+        }}>
+        <TouchableNativeFeedback onPress={() => navigation.navigate('TambahPetani')}>
+          <View
+            style={{
+              padding: 10,
+              backgroundColor: colors.primary,
+              borderRadius: 50,
+              width: 50,
+              height: 50,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Icon type="ionicon" name="add" color={colors.white} size={25} />
+          </View>
+        </TouchableNativeFeedback>
+      </View>
       {/* Modal edit */}
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View

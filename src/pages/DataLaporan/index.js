@@ -7,6 +7,7 @@ import {
   Modal,
   TextInput,
   TouchableNativeFeedback,
+  FlatList,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,6 +20,10 @@ import NetInfo from '@react-native-community/netinfo';
 import XLSX from 'xlsx';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
+import { getData } from '../../utils/localStorage';
+import 'intl';
+import ZavalabsScanner from 'react-native-zavalabs-scanner'
+import 'intl/locale-data/jsonp/id';
 
 export default function DataLaporan({ navigation }) {
   const [data, setData] = useState([]);
@@ -27,7 +32,7 @@ export default function DataLaporan({ navigation }) {
   const [search, setSearch] = useState('');
   const [form, setForm] = useState({
     tanggal: '',
-    namaPetani: '',
+    nama: '',
     kasAwal: '',
     timbangan: '',
     inventory: '',
@@ -59,11 +64,12 @@ export default function DataLaporan({ navigation }) {
     return split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
   };
 
-  const getData = async () => {
-    const json = await AsyncStorage.getItem('DATA_TRANSAKSI');
-    if (json) {
-      setData(JSON.parse(json));
-    }
+  const getLaporan = async () => {
+    getData('transaksi').then(res => {
+      console.log(res);
+      const tmp = res ? res : [];
+      setData(tmp);
+    })
   };
 
   const simpanEdit = async () => {
@@ -104,15 +110,43 @@ export default function DataLaporan({ navigation }) {
     });
   };
 
+  const openScanner = () => {
+    ZavalabsScanner.showBarcodeReader(result => {
+      console.log('barcode : ', result);
+      if (result !== null) {
+        navigation.navigate('PetaniDetail', {
+          id_petani: result
+        })
+      }
+
+    });
+  };
+
   useEffect(() => {
-    const focus = navigation.addListener('focus', getData);
+    const focus = navigation.addListener('focus', getLaporan);
     return focus;
   }, [navigation]);
 
   // Filter hasil berdasarkan nama petani
-  const filteredData = data.filter(item =>
-    item.namaPetani?.toLowerCase().includes(search.toLowerCase())
-  );
+  // const filteredData = data.filter(item =>
+  //   item.nama?.toLowerCase().includes(search.toLowerCase())
+  // );
+
+  const MyList = ({ label, value }) => {
+    return (
+
+      <View style={{ flexDirection: 'row', marginBottom: 6 }}>
+        <Text style={{ flex: 1, fontSize: 12, fontFamily: fonts.primary[400], color: colors.black }}>
+          {label}
+        </Text>
+        <Text style={{ flex: 1, fontSize: 12, fontFamily: fonts.primary[600], color: colors.primary }}>
+          {value}
+        </Text>
+      </View>
+
+
+    )
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.white }}>
@@ -138,13 +172,24 @@ export default function DataLaporan({ navigation }) {
               marginLeft: 10,
               fontFamily: fonts.primary[400],
               color: colors.black,
-            
+
             }}
             value={search}
-            onChangeText={setSearch}
+            onChangeText={x => {
+              setSearch(x);
+              if (x.length > 0) {
+                const filteredData = data.filter(i => i.nama.toLowerCase().indexOf(x.toLowerCase()) > -1);
+                if (filteredData.length > 0) {
+                  setData(filteredData)
+                }
+              } else {
+                getLaporan();
+              }
+            }}
           />
         </View>
         <TouchableOpacity
+          onPress={openScanner}
           style={{
             backgroundColor: '#f0f0f0',
             padding: 10,
@@ -154,15 +199,15 @@ export default function DataLaporan({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView>
-        <View style={{ padding: 20 }}>
-          {filteredData.length === 0 && (
+
+      <View style={{ padding: 20, flex: 1 }}>
+        {/* {filteredData.length === 0 && (
             <Text style={{ fontStyle: 'italic', textAlign: 'center' }}>
               Tidak ada data sesuai pencarian
             </Text>
-          )}
-
-          {filteredData.map((item, index) => (
+          )} */}
+        <FlatList data={data} renderItem={({ item, index }) => {
+          return (
             <View
               key={index}
               style={{
@@ -173,37 +218,23 @@ export default function DataLaporan({ navigation }) {
                 padding: 16,
                 marginBottom: 16,
               }}>
-              {Object.entries(labelText).map(([key, label]) => (
-                <View key={key} style={{ flexDirection: 'row', marginBottom: 6 }}>
-                  <Text style={{ flex: 1, fontFamily: fonts.primary[400], color: colors.black }}>
-                    {label}
-                  </Text>
-                  <Text style={{ flex: 1, fontFamily: fonts.primary[600], color: colors.primary }}>
-                    :{' '}
-                    {(() => {
-                      const val = item[key] || '-';
-                      if (key === 'tanggal') {
-                        return moment(val).locale('id').format('D MMMM YYYY');
-                      }
-                      if (key === 'timbangan') {
-                        return val.includes('Kg') ? val : `${val} Kg`;
-                      }
-                      if (['kasAwal', 'pemasukan', 'pengeluaran', 'kasModal'].includes(key)) {
-                        return val.toString().startsWith('Rp') ? val : `Rp${val}`;
-                      }
-                      return val;
-                    })()}
-                  </Text>
-                </View>
-              ))}
 
+
+              <MyList label="Tanggal" value={moment(item.tanggal).format('DD MMMM YYYY')} />
+              <MyList label="Petani" value={item.id_petani + ' - ' + item.nama} />
+              <MyList label="Kas/Modal Awal" value={'Rp' + new Intl.NumberFormat('id-ID').format(item.kasAwal)} />
+              <MyList label="Timbangan (Kg)" value={item.timbangan} />
+              <MyList label="Inventory" value={item.inventory} />
+              <MyList label="Pemasukan" value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pemasukan)} />
+
+              <MyList label="Pengeluaran" value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pengeluaran)} />
+              <MyList label="Kas/Modal   " value={'Rp' + new Intl.NumberFormat('id-ID').format(item.kasModal)} />
+              <MyList label="Poin" value={item.poin} />
               <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
                 <TouchableOpacity
                   style={{ marginRight: 10 }}
                   onPress={() => {
-                    setEditIndex(index);
-                    setForm(item);
-                    setEditVisible(true);
+                    navigation.navigate('EditTransaksi', item)
                   }}>
                   <Icon name="pencil" type="ionicon" size={20} color="#F5A623" />
                 </TouchableOpacity>
@@ -220,7 +251,7 @@ export default function DataLaporan({ navigation }) {
                           onPress: async () => {
                             const baru = [...data];
                             baru.splice(index, 1);
-                            await AsyncStorage.setItem('DATA_TRANSAKSI', JSON.stringify(baru));
+                            await AsyncStorage.setItem('transaksi', JSON.stringify(baru));
                             setData(baru);
                           },
                         },
@@ -232,17 +263,20 @@ export default function DataLaporan({ navigation }) {
                 </TouchableOpacity>
               </View>
             </View>
-          ))}
-        </View>
-      </ScrollView>
+          )
+        }} />
+
+      </View>
+
 
       {/* Tombol Download Excel */}
-      <View style={{ padding: 20, backgroundColor: 'white' }}>
+      <View style={{ paddingHorizontal: 10, backgroundColor: 'white' }}>
         <TouchableNativeFeedback onPress={downloadExcel}>
           <View
             style={{
+              marginBottom: 5,
               backgroundColor: 'green',
-              padding: 16,
+              padding: 10,
               borderRadius: 30,
               alignItems: 'center',
               justifyContent: 'center',
@@ -282,35 +316,6 @@ export default function DataLaporan({ navigation }) {
               Edit Transaksi
             </Text>
 
-            {Object.keys(labelText).map((key) => (
-              <TextInput
-                key={key}
-                placeholder={labelText[key]}
-                keyboardType={
-                  ['kasAwal', 'pemasukan', 'pengeluaran', 'kasModal', 'timbangan'].includes(key)
-                    ? 'numeric'
-                    : 'default'
-                }
-                value={form[key]}
-                onChangeText={(val) =>
-                  setForm({
-                    ...form,
-                    [key]:
-                      ['kasAwal', 'pemasukan', 'pengeluaran', 'kasModal'].includes(key)
-                        ? formatRupiah(val)
-                        : val,
-                  })
-                }
-                style={{
-                  borderWidth: 1,
-                  borderColor: '#ccc',
-                  borderRadius: 10,
-                  padding: 10,
-                  marginBottom: 10,
-                  fontFamily: fonts.primary[400],
-                }}
-              />
-            ))}
 
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
               <TouchableOpacity onPress={() => setEditVisible(false)} style={{ marginRight: 10 }}>

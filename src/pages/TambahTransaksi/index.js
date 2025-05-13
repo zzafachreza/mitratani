@@ -5,13 +5,15 @@ import {
   TouchableNativeFeedback,
   Modal,
   Image,
+  Alert,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { MyCalendar, MyHeader, MyInput } from '../../components';
+import { MyCalendar, MyHeader, MyInput, MyPicker } from '../../components';
 import { colors, fonts } from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import { Picker } from '@react-native-picker/picker';
+import { getData, MYAPP, storeData } from '../../utils/localStorage';
 
 const formatRupiah = (angka) => {
   if (!angka) return '0';
@@ -33,7 +35,6 @@ const parseNumber = (str) => {
 export default function TambahTransaksi({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [tanggal, setTanggal] = useState('');
-  const [namaPetani, setNamaPetani] = useState('');
   const [kasAwal, setKasAwal] = useState('');
   const [timbangan, setTimbangan] = useState('');
   const [inventory, setInventory] = useState('');
@@ -42,7 +43,25 @@ export default function TambahTransaksi({ navigation }) {
   const [kasModal, setKasModal] = useState('Rp0');
   const [pilihRumus, setPilihRumus] = useState('pemasukan');
 
+  const [petani, setPetani] = useState([]);
+  const [okepetani, setOkepetani] = useState({
+    id_petani: '',
+    nama: '',
+  })
+
   useEffect(() => {
+    getData('petani').then(res => {
+      // setPetani(res);
+      let tmp = [];
+      res.map(item => {
+        tmp.push({
+          value: item.id + '_' + item.nama,
+          label: item.id + ' / ' + item.nama
+        });
+        setPetani(tmp);
+      })
+      console.log(res);
+    })
     const awal = parseNumber(kasAwal);
     const masuk = parseNumber(pemasukan);
     const keluar = parseNumber(pengeluaran);
@@ -60,7 +79,6 @@ export default function TambahTransaksi({ navigation }) {
   const simpanTransaksi = async () => {
     const data = {
       tanggal,
-      namaPetani,
       kasAwal,
       timbangan,
       inventory,
@@ -70,15 +88,46 @@ export default function TambahTransaksi({ navigation }) {
     };
 
     try {
-      const lama = JSON.parse(await AsyncStorage.getItem('DATA_TRANSAKSI')) || [];
-      const baru = [...lama, data];
-      await AsyncStorage.setItem('DATA_TRANSAKSI', JSON.stringify(baru));
 
-      setModalVisible(true);
-      setTimeout(() => {
-        setModalVisible(false);
-        navigation.replace('MainApp');
-      }, 1500);
+      if (okepetani.id_petani.length == 0) {
+        Alert.alert(MYAPP, 'Petani belum dipilih !')
+      } else {
+        getData('transaksi').then(res => {
+          let tmp = res ? res : [];
+          const KIRIM = {
+            ...data,
+            id: 'TR' + moment().format('YYMMDDHHmmss'),
+            id_petani: okepetani.id_petani,
+            nama: okepetani.nama,
+            kasAwal: parseNumber(data.kasAwal),
+            pemasukan: parseNumber(data.pemasukan),
+            pengeluaran: parseNumber(data.pengeluaran),
+            kasModal: parseNumber(data.kasModal),
+            poin: data.timbangan,
+            last_update: moment().format('YYYYMMDDHHmmss'),
+          }
+
+
+          tmp.push(KIRIM); // tambahkan data baru
+          storeData('transaksi', tmp);
+          setModalVisible(true);
+          setTimeout(() => {
+            setModalVisible(false);
+            navigation.replace('MainApp');
+          }, 500);
+
+
+        })
+      }
+
+
+
+
+      // const lama = JSON.parse(await AsyncStorage.getItem('DATA_TRANSAKSI')) || [];
+      // const baru = [...lama, data];
+      // await AsyncStorage.setItem('DATA_TRANSAKSI', JSON.stringify(baru));
+
+
     } catch (e) {
       alert('Gagal menyimpan transaksi');
     }
@@ -105,12 +154,18 @@ export default function TambahTransaksi({ navigation }) {
             onDateChange={(date) => setTanggal(date)}
           />
 
-          <MyInput
-            label="Nama Petani :"
-            placeholder="Isi Nama Petani"
-            value={namaPetani}
-            onChangeText={setNamaPetani}
-          />
+
+          <MyPicker iconname='person' onChangeText={x => {
+            console.log(x);
+            let pe = x.split("_");
+            setOkepetani({
+              id_petani: pe[0],
+              nama: pe[1]
+            })
+          }} data={petani} />
+
+
+
 
           <MyInput
             label="Kas/Modal Awal :"
@@ -160,7 +215,8 @@ export default function TambahTransaksi({ navigation }) {
                 style={{
                   borderWidth: 1,
                   borderColor: '#ccc',
-                  borderRadius: 10,
+                  borderRadius: 30,
+
                   overflow: 'hidden',
                 }}>
                 <Picker

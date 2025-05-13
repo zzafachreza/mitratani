@@ -21,7 +21,7 @@ export const getData = async key => {
 
 
 export const apiURL = 'https://nutrishot.okeadmin.com/api/';
-export const MYAPP = 'NUTRISHOT';
+export const MYAPP = 'MITRATANI';
 export const api_token = 'd4e729bcd8aab6f0a710e8ca3d31524cb5783dd1d63ddbf32fbed278c435605f';
 export const webURL = apiURL.replace("api/", "");
 export const webPDF = apiURL.replace("api/", "assets/pdf/");

@@ -13,15 +13,54 @@ import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import moment from 'moment';
+import DocumentPicker from 'react-native-document-picker';
+import { storeData } from '../../utils/localStorage';
 
 export default function BackupRestore({ navigation }) {
   const [loading, setLoading] = useState(false);
 
+  const restoreData = async () => {
+    try {
+      // 1. Pick file
+      const res = await DocumentPicker.pickSingle({
+        type: [DocumentPicker.types.plainText],
+      });
+
+      // 2. Baca isi file sebagai teks
+      const fileContent = await RNFS.readFile(res.uri, 'utf8');
+
+      // 3. Parse isi file jadi JSON
+      const jsonData = JSON.parse(fileContent);
+
+      storeData('transaksi', jsonData.transaksi);
+      storeData('petani', jsonData.petani)
+
+      // 4. Simpan ke AsyncStorage
+      // await AsyncStorage.setItem('myData', JSON.stringify(jsonData));
+      setLoading(true);
+
+
+      setTimeout(() => {
+        setLoading(false);
+        Alert.alert('Berhasil', 'Data berhasil di-restore ke penyimpanan lokal!');
+      }, 1200)
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        // User cancel
+        console.log('Pemilihan file dibatalkan');
+      } else {
+        console.error('Gagal restore data:', err);
+        Alert.alert('Gagal', 'Terjadi kesalahan saat membaca file atau format tidak valid.');
+      }
+    }
+  };
+
+
   const handleBackup = async () => {
     setLoading(true);
     try {
-      const transaksi = await AsyncStorage.getItem('DATA_TRANSAKSI');
-      const petani = await AsyncStorage.getItem('DATA_PETANI');
+      const transaksi = await AsyncStorage.getItem('transaksi');
+      const petani = await AsyncStorage.getItem('petani');
 
       const allData = {
         transaksi: transaksi ? JSON.parse(transaksi) : [],
@@ -29,7 +68,7 @@ export default function BackupRestore({ navigation }) {
       };
 
       const timestamp = moment().format('YYYY-MM-DD_HH-mm');
-      const path = `${RNFS.DownloadDirectoryPath}/backup_${timestamp}.json`;
+      const path = `${RNFS.DownloadDirectoryPath}/backup_${timestamp}.text`;
 
       await RNFS.writeFile(path, JSON.stringify(allData), 'utf8');
 
@@ -85,7 +124,7 @@ export default function BackupRestore({ navigation }) {
           </View>
         </TouchableWithoutFeedback>
 
-        <TouchableWithoutFeedback>
+        <TouchableWithoutFeedback onPress={restoreData}>
           <View
             style={{
               padding: 10,
@@ -134,7 +173,7 @@ export default function BackupRestore({ navigation }) {
               fontFamily: fonts.primary[600],
               color: colors.primary,
             }}>
-            Sedang melakukan backup...
+            Sedang proses data...
           </Text>
         </View>
       </Modal>

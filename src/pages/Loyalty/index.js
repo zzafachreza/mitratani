@@ -1,207 +1,291 @@
 import {
-    View,
-    Text,
-    ScrollView,
-    TouchableOpacity,
-    TextInput,
-  } from 'react-native';
-  import React, { useEffect, useState } from 'react';
-  import AsyncStorage from '@react-native-async-storage/async-storage';
-  import { MyHeader } from '../../components';
-  import { colors, fonts } from '../../utils';
-  import { Icon } from 'react-native-elements';
-  
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Modal,
+  TextInput,
+  TouchableNativeFeedback,
+  FlatList,
+} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MyHeader } from '../../components';
+import { fonts, colors } from '../../utils';
+import { Icon } from 'react-native-elements';
+import moment from 'moment';
+import 'moment/locale/id';
+import NetInfo from '@react-native-community/netinfo';
+import XLSX from 'xlsx';
+import RNFS from 'react-native-fs';
+import Share from 'react-native-share';
+import { getData } from '../../utils/localStorage';
+import 'intl';
+import ZavalabsScanner from 'react-native-zavalabs-scanner'
+import 'intl/locale-data/jsonp/id';
+
+export default function Loyalty({ navigation }) {
+  const [data, setData] = useState([]);
+  const [editVisible, setEditVisible] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
+  const [search, setSearch] = useState('');
+  const [form, setForm] = useState({
+    tanggal: '',
+    nama: '',
+    kasAwal: '',
+    timbangan: '',
+    inventory: '',
+    pemasukan: '',
+    pengeluaran: '',
+    kasModal: '',
+  });
+
+  const labelText = {
+    tanggal: 'Tanggal',
+    namaPetani: 'Nama Petani',
+    kasAwal: 'Kas/Modal Awal',
+    timbangan: 'Timbangan (Kg)',
+    inventory: 'Inventory',
+    pemasukan: 'Pemasukan',
+    pengeluaran: 'Pengeluaran',
+    kasModal: 'Kas/Modal',
+  };
+
   const formatRupiah = (angka) => {
-    if (!angka) return '0';
-    const number = angka.toString().replace(/[^,\d]/g, '');
-    const split = number.split(',');
-    const sisa = split[0].length % 3;
+    let number_string = angka.replace(/[^,\d]/g, '').toString();
+    let split = number_string.split(',');
+    let sisa = split[0].length % 3;
     let rupiah = split[0].substr(0, sisa);
-    const ribuan = split[0].substr(sisa).match(/\d{3}/g);
+    let ribuan = split[0].substr(sisa).match(/\d{3}/g);
     if (ribuan) {
       rupiah += (sisa ? '.' : '') + ribuan.join('.');
     }
     return split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
   };
-  
-  export default function Royalti({ navigation }) {
-    const [ranking, setRanking] = useState([]);
-    const [editItem, setEditItem] = useState(null);
-  
-    const getData = async () => {
-      const json = await AsyncStorage.getItem('DATA_TRANSAKSI');
-      const data = json ? JSON.parse(json) : [];
-  
-      const grouped = {};
-  
-      data.forEach(item => {
-        const nama = item.namaPetani;
-        const berat = parseFloat(item.timbangan.replace(/[^\d]/g, '')) || 0;
-        const uang = parseFloat((item.pemasukan || '0').replace(/[^\d]/g, '')) || 0;
-        const poin = item.poin ? parseInt(item.poin) : berat;
-  
-        if (!grouped[nama]) {
-          grouped[nama] = {
+
+  const getLaporan = async () => {
+    getData('transaksi').then(res => {
+
+      const tmp = res ? res : [];
+      const grouped = tmp.reduce((acc, curr) => {
+        const nama = curr.nama;
+
+        if (!acc[nama]) {
+          acc[nama] = {
             nama,
             totalTimbangan: 0,
-            totalUang: 0,
-            poin: 0,
+            totalPoin: 0,
+            totalKasModal: 0
           };
         }
-  
-        grouped[nama].totalTimbangan += berat;
-        grouped[nama].totalUang += uang;
-        grouped[nama].poin = poin; // override terakhir yang muncul
-      });
-  
-      const result = Object.values(grouped);
-      result.sort((a, b) => b.totalTimbangan - a.totalTimbangan);
-      setRanking(result);
-    };
-  
-    useEffect(() => {
-      const unsubscribe = navigation.addListener('focus', getData);
-      return unsubscribe;
-    }, [navigation]);
-  
-    const simpanPoinEdit = async () => {
-      const json = await AsyncStorage.getItem('DATA_TRANSAKSI');
-      const data = json ? JSON.parse(json) : [];
-  
-      const dataBaru = data.map(item => {
-        if (item.namaPetani === editItem.nama) {
-          return { ...item, poin: editItem.poin };
-        }
-        return item;
-      });
-  
-      await AsyncStorage.setItem('DATA_TRANSAKSI', JSON.stringify(dataBaru));
-      setEditItem(null);
-      getData(); // refresh tampilan ranking
-    };
-  
-    const TableCell = ({ text, width, isHeader }) => (
-      <View style={{ width, paddingHorizontal: 6 }}>
-        <Text
-          style={{
-            fontFamily: isHeader ? fonts.primary[600] : fonts.primary[400],
-            fontSize: 13,
-            color: colors.black,
-          }}>
-          {text}
+
+        acc[nama].totalTimbangan += parseFloat(curr.timbangan);
+        acc[nama].totalPoin += parseFloat(curr.poin);
+        acc[nama].totalKasModal += parseFloat(curr.kasModal);
+
+        return acc;
+      }, {});
+
+      // Ubah object jadi array
+      const res_data = Object.values(grouped).sort((a, b) => b.totalTimbangan - a.totalTimbangan);
+
+      setData(res_data)
+    })
+  };
+
+  const simpanEdit = async () => {
+    const baru = [...data];
+    baru[editIndex] = form;
+    await AsyncStorage.setItem('DATA_TRANSAKSI', JSON.stringify(baru));
+    setData(baru);
+    setEditVisible(false);
+  };
+
+  const downloadExcel = async () => {
+    NetInfo.fetch().then(async state => {
+      if (!state.isConnected) {
+        Alert.alert(
+          'Koneksi Tidak Aktif',
+          'Aktifkan koneksi internet untuk mengunduh laporan Excel.'
+        );
+      } else {
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Data');
+
+        const wbout = XLSX.write(wb, { type: 'binary', bookType: 'xlsx' });
+        const path = `${RNFS.DownloadDirectoryPath}/data_laporan.xlsx`;
+
+        RNFS.writeFile(path, wbout, 'ascii')
+          .then(() => {
+            Share.open({
+              url: `file://${path}`,
+              type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              failOnCancel: false,
+            });
+          })
+          .catch(err => {
+            Alert.alert('Gagal Simpan File', err.message);
+          });
+      }
+    });
+  };
+
+  const openScanner = () => {
+    ZavalabsScanner.showBarcodeReader(result => {
+      console.log('barcode : ', result);
+      if (result !== null) {
+        navigation.navigate('PetaniDetail', {
+          id_petani: result
+        })
+      }
+
+    });
+  };
+
+  useEffect(() => {
+    const focus = navigation.addListener('focus', getLaporan);
+    return focus;
+  }, [navigation]);
+
+  // Filter hasil berdasarkan nama petani
+  // const filteredData = data.filter(item =>
+  //   item.nama?.toLowerCase().includes(search.toLowerCase())
+  // );
+
+  const MyList = ({ label, value }) => {
+    return (
+
+      <View style={{ flexDirection: 'row', marginBottom: 6 }}>
+        <Text style={{ flex: 1, fontSize: 12, fontFamily: fonts.primary[400], color: colors.black }}>
+          {label}
+        </Text>
+        <Text style={{ flex: 1, fontSize: 12, fontFamily: fonts.primary[600], color: colors.primary }}>
+          {value}
         </Text>
       </View>
-    );
-  
-    if (editItem) {
-      return (
-        <View style={{ flex: 1, backgroundColor: colors.white }}>
-          <MyHeader title="Edit Poin" />
-          <ScrollView>
-            <View style={{ padding: 20 }}>
-              <Text style={{ fontFamily: fonts.primary[600], marginBottom: 6 }}>Nama Petani :</Text>
-              <TextInput
-                editable={false}
-                value={editItem.nama}
-                style={{ backgroundColor: '#f4f4f4', padding: 12, borderRadius: 12, marginBottom: 10 }}
-              />
-              <Text style={{ fontFamily: fonts.primary[600], marginBottom: 6 }}>Timbangan :</Text>
-              <TextInput
-                editable={false}
-                value={`${editItem.totalTimbangan} Kg`}
-                style={{ backgroundColor: '#f4f4f4', padding: 12, borderRadius: 12, marginBottom: 10 }}
-              />
-              <Text style={{ fontFamily: fonts.primary[600], marginBottom: 6 }}>Total Keuangan :</Text>
-              <TextInput
-                editable={false}
-                value={`Rp${formatRupiah(editItem.totalUang.toString())}`}
-                style={{ backgroundColor: '#f4f4f4', padding: 12, borderRadius: 12, marginBottom: 10 }}
-              />
-              <Text style={{ fontFamily: fonts.primary[600], marginBottom: 6 }}>Poin :</Text>
-              <TextInput
-                value={editItem.poin.toString()}
-                keyboardType="numeric"
-                onChangeText={(val) =>
-                  setEditItem({ ...editItem, poin: parseInt(val) || 0 })
-                }
-                style={{
-                  backgroundColor: '#f4f4f4',
-                  padding: 12,
-                  borderRadius: 12,
-                  marginBottom: 20,
-                }}
-              />
-              <TouchableOpacity
-                onPress={simpanPoinEdit}
-                style={{
-                  backgroundColor: colors.primary,
-                  padding: 14,
-                  borderRadius: 20,
-                }}>
-                <Text style={{
-                  color: 'white',
-                  fontFamily: fonts.primary[600],
-                  textAlign: 'center'
-                }}>
-                  Simpan
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </View>
-      );
-    }
-  
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.white }}>
-        <MyHeader title="Ranking Loyalty" />
-        <ScrollView horizontal>
-          <View style={{ padding: 10, minWidth: 600 }}>
-            {/* Header Table */}
-            <View
-              style={{
-                flexDirection: 'row',
-                backgroundColor: '#f5f5f5',
-                paddingVertical: 10,
-                borderTopLeftRadius: 8,
-                borderTopRightRadius: 8,
-                borderBottomWidth: 1,
-                borderColor: '#ccc',
-                alignItems: 'center',
-              }}>
-              <TableCell text="Nama Petani" width={150} isHeader />
-              <TableCell text="Timbangan" width={100} isHeader />
-              <TableCell text="Total Keuangan" width={150} isHeader />
-              <TableCell text="Poin" width={60} isHeader />
-              <TableCell text="Aksi" width={50} isHeader />
-            </View>
-  
-            {/* Data Rows */}
-            {ranking.map((item, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  paddingVertical: 12,
-                  borderBottomWidth: 1,
-                  borderColor: '#eee',
-                  backgroundColor: index % 2 === 0 ? '#fff' : '#f9f9f9',
-                  alignItems: 'center',
-                }}>
-                <TableCell text={item.nama} width={150} />
-                <TableCell text={`${item.totalTimbangan} Kg`} width={100} />
-                <TableCell text={`Rp${formatRupiah(item.totalUang.toString())}`} width={150} />
-                <TableCell text={item.poin.toString()} width={60} />
-                <View style={{ width: 50, alignItems: 'center' }}>
-                  <TouchableOpacity onPress={() => setEditItem(item)}>
-                    <Icon name="pencil" type="ionicon" size={18} color={colors.primary} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-    );
+
+
+    )
   }
-  
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.white }}>
+      <MyHeader title="Ranking Loyalty" />
+
+      <View style={{ padding: 20, flex: 1 }}>
+
+        <FlatList data={data} renderItem={({ item, index }) => {
+          return (
+            <View
+              key={index}
+              style={{
+                borderRadius: 16,
+                backgroundColor: '#FAFAFA',
+                borderColor: '#ddd',
+                borderWidth: 1,
+                padding: 10,
+                marginBottom: 16,
+              }}>
+
+              <MyList label="Petani" value={item.nama} />
+              <MyList label="Timbangan (Kg)" value={item.totalTimbangan} />
+              <MyList label="Poin" value={item.totalPoin} />
+              <View style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                borderRadius: 20,
+                width: 40,
+                height: 40,
+                backgroundColor: colors.primary,
+                justifyContent: 'center',
+                alignContent: 'center',
+              }}>
+                <Text style={{
+                  fontFamily: fonts.secondary[800],
+                  fontSize: 20,
+                  textAlign: 'center',
+                  color: colors.white
+                }}>{index + 1}</Text>
+              </View>
+            </View>
+          )
+        }} />
+
+      </View>
+
+
+      {/* Tombol Download Excel */}
+      <View style={{ paddingHorizontal: 10, backgroundColor: 'white' }}>
+        <TouchableNativeFeedback onPress={downloadExcel}>
+          <View
+            style={{
+              marginBottom: 5,
+              backgroundColor: 'green',
+              padding: 10,
+              borderRadius: 30,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'row',
+            }}>
+            <Icon type="ionicon" name="download" color={colors.white} size={20} />
+            <Text
+              style={{
+                fontFamily: fonts.primary[600],
+                color: colors.white,
+                fontSize: 15,
+                marginLeft: 10,
+              }}>
+              Download Excel
+            </Text>
+          </View>
+        </TouchableNativeFeedback>
+      </View>
+
+      {/* Modal Edit */}
+      <Modal visible={editVisible} transparent animationType="slide">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: '#00000088',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <View
+            style={{
+              backgroundColor: 'white',
+              padding: 20,
+              borderRadius: 16,
+              width: '90%',
+            }}>
+            <Text style={{ fontFamily: fonts.primary[600], fontSize: 16, marginBottom: 10 }}>
+              Edit Transaksi
+            </Text>
+
+
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <TouchableOpacity onPress={() => setEditVisible(false)} style={{ marginRight: 10 }}>
+                <Text style={{ color: '#666' }}>Batal</Text>
+              </TouchableOpacity>
+              <TouchableNativeFeedback onPress={simpanEdit}>
+                <View
+                  style={{
+                    backgroundColor: colors.primary,
+                    paddingHorizontal: 20,
+                    paddingVertical: 8,
+                    borderRadius: 10,
+                  }}>
+                  <Text style={{ color: colors.white, fontFamily: fonts.primary[600] }}>
+                    Simpan
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+}

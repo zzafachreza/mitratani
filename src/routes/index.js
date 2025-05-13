@@ -75,6 +75,8 @@ import {
   DataLaporan,
   BackupRestore,
   Royalti,
+  EditTransaksi,
+  PetaniDetail,
 
 
 
@@ -124,8 +126,27 @@ export default function Router() {
         }}
       />
 
+      <Stack.Screen
+        name="EditTransaksi"
+        component={EditTransaksi}
+        options={{
+          headerShown: false,
 
-<Stack.Screen
+        }}
+      />
+
+
+      <Stack.Screen
+        name="PetaniDetail"
+        component={PetaniDetail}
+        options={{
+          headerShown: false,
+
+        }}
+      />
+
+
+      <Stack.Screen
         name="BuatPenawaran"
         component={BuatPenawaran}
         options={{
@@ -135,7 +156,7 @@ export default function Router() {
       />
 
 
-<Stack.Screen
+      <Stack.Screen
         name="DataPetani"
         component={DataPetani}
         options={{
@@ -144,7 +165,7 @@ export default function Router() {
         }}
       />
 
-<Stack.Screen
+      <Stack.Screen
         name="TambahTransaksi"
         component={TambahTransaksi}
         options={{
@@ -153,7 +174,7 @@ export default function Router() {
         }}
       />
 
-<Stack.Screen
+      <Stack.Screen
         name="TambahData"
         component={TambahData}
         options={{
@@ -162,7 +183,7 @@ export default function Router() {
         }}
       />
 
-<Stack.Screen
+      <Stack.Screen
         name="TambahPetani"
         component={TambahPetani}
         options={{
@@ -172,7 +193,7 @@ export default function Router() {
       />
 
 
-<Stack.Screen
+      <Stack.Screen
         name="DataLaporan"
         component={DataLaporan}
         options={{
@@ -181,7 +202,7 @@ export default function Router() {
         }}
       />
 
-<Stack.Screen
+      <Stack.Screen
         name="BackupRestore"
         component={BackupRestore}
         options={{
@@ -190,8 +211,8 @@ export default function Router() {
         }}
       />
 
-      
-<Stack.Screen
+
+      <Stack.Screen
         name="Royalti"
         component={Royalti}
         options={{
@@ -200,7 +221,7 @@ export default function Router() {
         }}
       />
 
-<Stack.Screen
+      <Stack.Screen
         name="HasilBuatPenawaran"
         component={HasilBuatPenawaran}
         options={{
@@ -209,7 +230,7 @@ export default function Router() {
         }}
       />
 
-<Stack.Screen
+      <Stack.Screen
         name="Login"
         component={Login}
         options={{
@@ -218,7 +239,7 @@ export default function Router() {
         }}
       />
 
-<Stack.Screen
+      <Stack.Screen
         name="CheckHargaStock"
         component={CheckHargaStock}
         options={{
@@ -227,7 +248,7 @@ export default function Router() {
         }}
       />
 
-<Stack.Screen
+      <Stack.Screen
         name="Register"
         component={Register}
         options={{
@@ -247,7 +268,7 @@ export default function Router() {
       />
 
 
-<Stack.Screen
+      <Stack.Screen
         name="Petunjuk"
         component={Petunjuk}
         options={{
