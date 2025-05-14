@@ -67,7 +67,17 @@ export default function PetaniDetail({ navigation, route }) {
         getData('transaksi').then(res => {
             console.log(res);
             let tmp = res ? res : [];
-            const filteredes = tmp.filter(i => i.id_petani == route.params.id_petani)
+            const filteredes = tmp.filter(i => i.id_petani == route.params.id_petani);
+            let totalTM = 0;
+            let totalPEM = 0;
+            filteredes.map(i => {
+                totalTM += parseFloat(i.timbangan);
+                totalPEM += parseFloat(i.pemasukan);
+            })
+            setTOTAL({
+                timbangan: totalTM,
+                pemasukan: totalPEM
+            })
             setData(filteredes);
         })
     };
@@ -80,6 +90,10 @@ export default function PetaniDetail({ navigation, route }) {
         setEditVisible(false);
     };
 
+    const [TOTAL, setTOTAL] = useState({
+        timbangan: 0,
+        pemasukan: 0
+    })
     const downloadExcel = async () => {
         NetInfo.fetch().then(async state => {
             if (!state.isConnected) {
@@ -209,7 +223,35 @@ export default function PetaniDetail({ navigation, route }) {
                 }} />
 
             </View>
-
+            <View style={{ paddingHorizontal: 10, backgroundColor: 'white' }}>
+                <View style={{
+                    paddingHorizontal: 10,
+                    flexDirection: 'row',
+                    alignItems: 'center'
+                }}>
+                    <Text style={{
+                        flex: 1,
+                        ...fonts.caption
+                    }}>Total Timbangan</Text>
+                    <Text style={{
+                        ...fonts.headline5
+                    }}>{TOTAL.timbangan} kg</Text>
+                </View>
+                <View style={{
+                    paddingHorizontal: 10,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 10,
+                }}>
+                    <Text style={{
+                        flex: 1,
+                        ...fonts.caption
+                    }}>Total Pemasukan</Text>
+                    <Text style={{
+                        ...fonts.headline5
+                    }}>{'Rp' + new Intl.NumberFormat('id-ID').format(TOTAL.pemasukan)}</Text>
+                </View>
+            </View>
 
             {/* Tombol Download Excel */}
             <View style={{ paddingHorizontal: 10, backgroundColor: 'white' }}>
