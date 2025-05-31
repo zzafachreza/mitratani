@@ -25,7 +25,8 @@ import 'intl';
 import ZavalabsScanner from 'react-native-zavalabs-scanner'
 import 'intl/locale-data/jsonp/id';
 
-export default function Loyalty({ navigation }) {
+export default function Loyalty({ navigation, route }) {
+  const key = route.params.key ? route.params.key : route.params.key;
   const [data, setData] = useState([]);
   const [editVisible, setEditVisible] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
@@ -73,8 +74,6 @@ export default function Loyalty({ navigation }) {
     const grouped = tmp.reduce((acc, curr) => {
       const nama = curr.nama;
 
-
-
       if (!acc[nama]) {
         acc[nama] = {
           nama,
@@ -83,7 +82,7 @@ export default function Loyalty({ navigation }) {
           totalKasModal: 0
         };
       }
-
+      acc[nama].id_petani = curr.id_petani;
       acc[nama].totalTimbangan += parseFloat(curr.timbangan);
       acc[nama].totalPoin = parseFloat(petani.filter(i => i.id == curr.id_petani)[0].poin);
       acc[nama].totalKasModal += parseFloat(curr.kasModal);
@@ -94,8 +93,20 @@ export default function Loyalty({ navigation }) {
     // Ubah object jadi array
     const res_data = Object.values(grouped).sort((a, b) => b.totalTimbangan - a.totalTimbangan);
     console.log(res_data);
-    setData(res_data);
-    setTMP(res_data);
+    if (key.length > 0) {
+      const keyword = key.toLowerCase();
+
+      const filtered = res_data.filter(i =>
+        i.nama.toLowerCase().includes(keyword) ||
+        i.id_petani.toString().toLowerCase().includes(keyword)
+      );
+      setData(filtered);
+      setTMP(filtered);
+    } else {
+      setData(res_data);
+      setTMP(res_data);
+    }
+
   };
 
   const simpanEdit = async () => {
@@ -162,7 +173,7 @@ export default function Loyalty({ navigation }) {
     return (
 
       <View style={{ flexDirection: 'row', marginBottom: 6 }}>
-        <Text style={{ flex: 1, fontSize: 12, fontFamily: fonts.primary[400], color: colors.black }}>
+        <Text style={{ flex: 0.6, fontSize: 12, fontFamily: fonts.primary[400], color: colors.black }}>
           {label}
         </Text>
         <Text style={{ flex: 1, fontSize: 12, fontFamily: fonts.primary[600], color: colors.primary }}>
@@ -177,24 +188,30 @@ export default function Loyalty({ navigation }) {
   const filterPetani = (x) => {
     console.log(x);
 
-    let filterd = data.filter(i => i.nama.toLowerCase().indexOf(x.toLowerCase()) > -1);
-    console.log(filterd);
-    if (x.length == 0) {
-      setData(TMP)
-    } else if (filterd.length > 0) {
-      setData(filterd)
+    const keyword = x.toLowerCase();
+
+    const filtered = data.filter(i =>
+      i.nama.toLowerCase().includes(keyword) ||
+      i.id_petani.toString().toLowerCase().includes(keyword)
+    );
+
+    if (x.length === 0) {
+      setData(TMP); // Kembalikan ke data asli
+    } else if (filtered.length > 0) {
+      setData(filtered);
     } else {
-      setData(data);
+      setData([]); // Kosongkan jika tidak ada hasil
     }
 
-  }
+    console.log(filtered);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.white }}>
-      <MyHeader title="Ranking Loyalty" />
+      <MyHeader title={key.length > 0 ? 'Petani / Member' : 'Ranking Loyalty'} />
 
       <View style={{ padding: 20, flex: 1 }}>
-        <MyInput onChangeText={x => filterPetani(x)} nolabel placeholder="Pencarian . . ." />
+        {key.length == 0 && <MyInput onChangeText={x => filterPetani(x)} nolabel placeholder="Pencarian . . ." />}
         <MyGap jarak={10} />
         <FlatList data={data} renderItem={({ item, index }) => {
 
@@ -211,27 +228,29 @@ export default function Loyalty({ navigation }) {
                 marginBottom: 16,
               }}>
 
-              <MyList label="Petani" value={item.nama} />
+              <MyList label="Petani" value={item.id_petani + ' - ' + item.nama} />
               <MyList label="Timbangan (Kg)" value={item.totalTimbangan} />
               <MyList label="Poin" value={item.totalPoin} />
-              <View style={{
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                borderRadius: 20,
-                width: 40,
-                height: 40,
-                backgroundColor: colors.primary,
-                justifyContent: 'center',
-                alignContent: 'center',
-              }}>
-                <Text style={{
-                  fontFamily: fonts.secondary[800],
-                  fontSize: 20,
-                  textAlign: 'center',
-                  color: colors.white
-                }}>{index + 1}</Text>
-              </View>
+              {key.length == 0 &&
+                <View style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  borderRadius: 20,
+                  width: 40,
+                  height: 40,
+                  backgroundColor: colors.primary,
+                  justifyContent: 'center',
+                  alignContent: 'center',
+                }}>
+                  <Text style={{
+                    fontFamily: fonts.secondary[800],
+                    fontSize: 20,
+                    textAlign: 'center',
+                    color: colors.white
+                  }}>{index + 1}</Text>
+                </View>
+              }
             </View>
           )
         }} />

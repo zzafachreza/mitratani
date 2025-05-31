@@ -12,6 +12,10 @@ import {
 } from 'react-native';
 import { getData } from '../../utils/localStorage';
 import { colors, fonts, windowWidth } from '../../utils';
+import { MyInput } from '../../components';
+import { TouchableOpacity } from 'react-native';
+import { Icon } from 'react-native-elements';
+import { showMessage } from 'react-native-flash-message';
 
 
 
@@ -22,7 +26,7 @@ export default function Home({ navigation, route }) {
   const scrollX = useRef(new Animated.Value(0)).current; // Untuk animasi scroll
   const scrollViewRef = useRef(null); // Untuk mengontrol scroll view
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  const [key, setKey] = useState('');
   const __getUser = () => {
     getData('user').then((u) => {
       setUser(u);
@@ -176,7 +180,9 @@ export default function Home({ navigation, route }) {
               </View>
             </TouchableNativeFeedback>
 
-            <TouchableNativeFeedback onPress={() => navigation.navigate('Royalti')}>
+            <TouchableNativeFeedback onPress={() => navigation.navigate('Royalti', {
+              key: ''
+            })}>
               <View style={{
                 padding: 10,
                 backgroundColor: colors.primary,
@@ -207,6 +213,39 @@ export default function Home({ navigation, route }) {
 
         </View>
       </ScrollView>
+      <View style={{
+        padding: 20,
+        backgroundColor: colors.primary,
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}>
+        <View style={{
+          flex: 1,
+          paddingRight: 5,
+        }}>
+          <MyInput nolabel onChangeText={x => setKey(x)} placeholder="Pencarian petani / member" />
+        </View>
+        <TouchableOpacity onPress={() => {
+          if (key.length > 0) {
+            navigation.navigate('Royalti', {
+              key: key
+            })
+          } else {
+            showMessage({ message: 'Pencarian tidak boleh kosong !' })
+          }
+        }} style={{
+          width: 50,
+          marginTop: 10,
+
+          backgroundColor: colors.white,
+          height: 40,
+          borderRadius: 10,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <Icon type='ionicon' name='search' />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

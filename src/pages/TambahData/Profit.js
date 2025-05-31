@@ -21,11 +21,12 @@ export default function Profit({ navigation }) {
 
 
     const [kirim, setKirim] = useState({
-        inv: 0,
-        avg: 0,
-        new: 0,
-        bfr: 0,
-        total: 0,
+        last: '',
+        inv: '',
+        avg: '',
+        new: '',
+        bfr: '',
+        total: '',
 
     });
 
@@ -33,14 +34,23 @@ export default function Profit({ navigation }) {
         getData('profit').then(res => {
             if (!res) {
                 setKirim({
-                    inv: 0,
-                    avg: 0,
-                    new: 0,
-                    bfr: 0,
+                    last: '',
+                    inv: '',
+                    avg: '',
+                    new: '',
+                    bfr: '',
 
                 })
             } else {
-                setKirim(res)
+                setKirim({
+                    last: formatRupiah(res.last),
+                    inv: formatRupiah(res.inv),
+                    avg: formatRupiah(res.avg),
+                    new: formatRupiah(res.new),
+                    bfr: formatRupiah(res.bfr),
+                    total: formatRupiah(res.total),
+
+                })
             }
         })
     }, [])
@@ -64,33 +74,38 @@ export default function Profit({ navigation }) {
 
 
     const simpanData = async () => {
+        console.log(kirim);
 
         console.log({
-            inv: parseFloat(kirim.inv),
-            avg: parseFloat(kirim.avg),
-            new: parseFloat(kirim.new),
-            bfr: parseFloat(kirim.bfr),
-            total: parseFloat(kirim.inv) * parseFloat(kirim.avg) + parseFloat(kirim.new) - parseFloat(kirim.bfr)
+            inv: parseFloat(parseNumber(kirim.inv)),
+            avg: parseFloat(parseNumber(kirim.avg)),
+            new: parseFloat(parseNumber(kirim.new)),
+            bfr: parseFloat(parseNumber(kirim.bfr)),
+            total: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr)),
+            last: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr))
 
         });
 
         setKirim({
-            inv: parseFloat(kirim.inv),
-            avg: parseFloat(kirim.avg),
-            new: parseFloat(kirim.new),
-            bfr: parseFloat(kirim.bfr),
-            total: parseFloat(kirim.inv) * parseFloat(kirim.avg) + parseFloat(kirim.new) - parseFloat(kirim.bfr)
+            inv: parseFloat(parseNumber(kirim.inv)),
+            avg: parseFloat(parseNumber(kirim.avg)),
+            new: parseFloat(parseNumber(kirim.new)),
+            bfr: parseFloat(parseNumber(kirim.bfr)),
+            total: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr)),
+            last: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr))
 
         })
 
         storeData('profit', {
-            inv: parseFloat(kirim.inv),
-            avg: parseFloat(kirim.avg),
-            new: parseFloat(kirim.new),
-            bfr: parseFloat(kirim.bfr),
-            total: parseFloat(kirim.inv) * parseFloat(kirim.avg) + parseFloat(kirim.new) - parseFloat(kirim.bfr)
+            inv: parseFloat(parseNumber(kirim.inv)),
+            avg: parseFloat(parseNumber(kirim.avg)),
+            new: parseFloat(parseNumber(kirim.new)),
+            bfr: parseFloat(parseNumber(kirim.bfr)),
+            total: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr)),
+            last: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr))
 
-        })
+        });
+        // navigation.goBack();
 
 
 
@@ -102,39 +117,47 @@ export default function Profit({ navigation }) {
 
     };
 
-    const lst = 'Pakai ini saja Inventory yang tersisa x harga rata2 inventory + kas setelah penjualan yang baru - kas penjualan sebelumnya';
+
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.white }}>
             <MyHeader title="Informasi Profit" />
             <ScrollView>
                 <View style={{ padding: 20 }}>
+
+                    <MyInput
+                        disabled
+                        label="Profit Trakhir"
+                        keyboardType="number-pad"
+                        value={formatRupiah(kirim.last)}
+                    />
+
                     <MyInput
                         label="Inventory yang Tersisa"
                         keyboardType="number-pad"
-                        value={kirim.inv.toString()}
-                        onChangeText={x => setKirim({ ...kirim, inv: x })}
+                        value={formatRupiah(kirim.inv)}
+                        onChangeText={x => setKirim({ ...kirim, inv: formatRupiah(x) })}
                     />
 
                     <MyInput
                         label="Harga Rata-rata Inventory"
                         keyboardType="number-pad"
-                        value={kirim.avg.toString()}
-                        onChangeText={x => setKirim({ ...kirim, avg: x })}
+                        value={formatRupiah(kirim.avg)}
+                        onChangeText={x => setKirim({ ...kirim, avg: formatRupiah(x) })}
                     />
 
                     <MyInput
                         label="Kas Setelah Penjualan yang Baru"
                         keyboardType="number-pad"
-                        value={kirim.new.toString()}
-                        onChangeText={x => setKirim({ ...kirim, new: x })}
+                        value={formatRupiah(kirim.new)}
+                        onChangeText={x => setKirim({ ...kirim, new: formatRupiah(x) })}
                     />
 
                     <MyInput
                         label="Kas Penjualan Sebelumnya"
                         keyboardType="number-pad"
-                        value={kirim.bfr.toString()}
-                        onChangeText={x => setKirim({ ...kirim, bfr: x })}
+                        value={formatRupiah(kirim.bfr)}
+                        onChangeText={x => setKirim({ ...kirim, bfr: formatRupiah(x) })}
                     />
 
                     <Text style={{

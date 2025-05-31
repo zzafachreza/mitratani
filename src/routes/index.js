@@ -93,15 +93,6 @@ const Tab = createBottomTabNavigator();
 
 const Stack = createStackNavigator();
 
-const MainApp = () => {
-  return (
-    <Tab.Navigator initialRouteName='Produk' tabBar={props => <BottomNavigator {...props} />}>
-      <Tab.Screen name="Home" component={Home} />
-
-
-    </Tab.Navigator>
-  );
-};
 
 export default function Router() {
   return (
@@ -307,7 +298,7 @@ export default function Router() {
 
       <Stack.Screen
         name="MainApp"
-        component={MainApp}
+        component={Home}
         options={{
           headerShown: false,
         }}

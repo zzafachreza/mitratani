@@ -174,18 +174,21 @@ export default function PetaniDetail({ navigation, route }) {
                                 padding: 16,
                                 marginBottom: 16,
                             }}>
-
+                            <MyList label="Tipe Transaksi" value={item.tipe} />
 
                             <MyList label="Tanggal" value={moment(item.tanggal).format('DD MMMM YYYY')} />
+                            {item.tipe == 'Kakao' && <MyList label="Beban Beban Lain" value={item.beban} />}
                             <MyList label="Petani" value={item.id_petani + ' - ' + item.nama} />
+
                             <MyList label="Kas/Modal Awal" value={'Rp' + new Intl.NumberFormat('id-ID').format(item.kasAwal)} />
-                            <MyList label="Timbangan (Kg)" value={item.timbangan} />
+                            <MyList label={item.tipe == 'Kakao' ? 'Timbangan (Kg)' : 'Item'} value={item.timbangan} />
                             <MyList label="Inventory" value={item.inventory} />
-                            <MyList label="Pemasukan" value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pemasukan)} />
+                            <MyList label={item.tipe == 'Kakao' ? 'Pemasukan' : 'Penjualan'} value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pemasukan)} />
+                            {item.tipe !== 'Kakao' && <MyList label="Nama Barang" value={item.barang} />}
 
-                            <MyList label="Pengeluaran" value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pengeluaran)} />
+                            {item.tipe !== 'Poin' && <MyList label="Poin" value={item.poinku} />}
+                            <MyList label={item.tipe == 'Kakao' ? 'Pengeluaran' : 'Pembelian'} value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pengeluaran)} />
                             <MyList label="Kas/Modal   " value={'Rp' + new Intl.NumberFormat('id-ID').format(item.kasModal)} />
-
                             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
                                 <TouchableOpacity
                                     style={{ marginRight: 10 }}
