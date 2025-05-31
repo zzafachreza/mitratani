@@ -28,7 +28,7 @@ export default function MyHeader({
         backgroundColor: colors.primary,
         justifyContent: 'space-between',
       }}>
-      
+
       {/* Tombol Back */}
       <TouchableOpacity
         onPress={() => navigation.goBack()}
@@ -45,7 +45,7 @@ export default function MyHeader({
       <View style={{ flex: 1, paddingHorizontal: 10 }}>
         <Text
           style={{
-            ...fonts.headline2,
+            ...fonts.headline5,
             color: color,
             textAlign: 'center',
             flexWrap: 'wrap',

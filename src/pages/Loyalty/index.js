@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MyHeader } from '../../components';
+import { MyGap, MyHeader, MyInput } from '../../components';
 import { fonts, colors } from '../../utils';
 import { Icon } from 'react-native-elements';
 import moment from 'moment';
@@ -64,34 +64,38 @@ export default function Loyalty({ navigation }) {
     return split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
   };
 
+  const [TMP, setTMP] = useState([]);
   const getLaporan = async () => {
-    getData('transaksi').then(res => {
 
-      const tmp = res ? res : [];
-      const grouped = tmp.reduce((acc, curr) => {
-        const nama = curr.nama;
+    const tmp = await getData('transaksi');
+    const petani = await getData('petani');
 
-        if (!acc[nama]) {
-          acc[nama] = {
-            nama,
-            totalTimbangan: 0,
-            totalPoin: 0,
-            totalKasModal: 0
-          };
-        }
+    const grouped = tmp.reduce((acc, curr) => {
+      const nama = curr.nama;
 
-        acc[nama].totalTimbangan += parseFloat(curr.timbangan);
-        acc[nama].totalPoin += parseFloat(curr.poin);
-        acc[nama].totalKasModal += parseFloat(curr.kasModal);
 
-        return acc;
-      }, {});
 
-      // Ubah object jadi array
-      const res_data = Object.values(grouped).sort((a, b) => b.totalTimbangan - a.totalTimbangan);
+      if (!acc[nama]) {
+        acc[nama] = {
+          nama,
+          totalTimbangan: 0,
+          totalPoin: 0,
+          totalKasModal: 0
+        };
+      }
 
-      setData(res_data)
-    })
+      acc[nama].totalTimbangan += parseFloat(curr.timbangan);
+      acc[nama].totalPoin = parseFloat(petani.filter(i => i.id == curr.id_petani)[0].poin);
+      acc[nama].totalKasModal += parseFloat(curr.kasModal);
+
+      return acc;
+    }, {});
+
+    // Ubah object jadi array
+    const res_data = Object.values(grouped).sort((a, b) => b.totalTimbangan - a.totalTimbangan);
+    console.log(res_data);
+    setData(res_data);
+    setTMP(res_data);
   };
 
   const simpanEdit = async () => {
@@ -170,13 +174,31 @@ export default function Loyalty({ navigation }) {
     )
   }
 
+  const filterPetani = (x) => {
+    console.log(x);
+
+    let filterd = data.filter(i => i.nama.toLowerCase().indexOf(x.toLowerCase()) > -1);
+    console.log(filterd);
+    if (x.length == 0) {
+      setData(TMP)
+    } else if (filterd.length > 0) {
+      setData(filterd)
+    } else {
+      setData(data);
+    }
+
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.white }}>
       <MyHeader title="Ranking Loyalty" />
 
       <View style={{ padding: 20, flex: 1 }}>
-
+        <MyInput onChangeText={x => filterPetani(x)} nolabel placeholder="Pencarian . . ." />
+        <MyGap jarak={10} />
         <FlatList data={data} renderItem={({ item, index }) => {
+
+
           return (
             <View
               key={index}

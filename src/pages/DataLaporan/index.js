@@ -63,11 +63,16 @@ export default function DataLaporan({ navigation }) {
     }
     return split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
   };
-
+  const [berat, setBerat] = useState(0);
   const getLaporan = async () => {
     getData('transaksi').then(res => {
       console.log(res);
       const tmp = res ? res : [];
+      let brt = 0;
+      tmp.map(i => {
+        brt += parseFloat(i.timbangan);
+      });
+      setBerat(brt);
       setData(tmp);
     })
   };
@@ -229,7 +234,7 @@ export default function DataLaporan({ navigation }) {
 
               <MyList label="Pengeluaran" value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pengeluaran)} />
               <MyList label="Kas/Modal   " value={'Rp' + new Intl.NumberFormat('id-ID').format(item.kasModal)} />
-              <MyList label="Poin" value={item.poin} />
+              {/* <MyList label="Poin" value={item.poin} /> */}
               <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
                 <TouchableOpacity
                   style={{ marginRight: 10 }}
@@ -271,6 +276,19 @@ export default function DataLaporan({ navigation }) {
 
       {/* Tombol Download Excel */}
       <View style={{ paddingHorizontal: 10, backgroundColor: 'white' }}>
+        <View style={{
+          flexDirection: 'row',
+          padding: 10,
+        }}>
+          <Text style={{
+            flex: 1,
+            fontFamily: fonts.secondary[600],
+          }}>Total Timbangan</Text>
+          <Text style={{
+
+            fontFamily: fonts.secondary[800],
+          }}>{berat} kg</Text>
+        </View>
         <TouchableNativeFeedback onPress={downloadExcel}>
           <View
             style={{

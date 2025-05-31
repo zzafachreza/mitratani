@@ -22,11 +22,13 @@ import BackupRestore from './BackupPage';
 import Royalti from './Loyalty';
 import EditTransaksi from './TambahTransaksi/EditTransaksi';
 import PetaniDetail from './TambahData/PetaniDetail';
+import Profit from './TambahData/Profit';
 
 
 
 export {
   Splash,
+  Profit,
   Home,
   PetaniDetail,
   EditTransaksi,

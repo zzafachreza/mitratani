@@ -6,6 +6,7 @@ import {
   Modal,
   Image,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { MyCalendar, MyHeader, MyInput, MyPicker } from '../../components';
@@ -32,7 +33,7 @@ const parseNumber = (str) => {
   return parseInt(str.replace(/[^0-9]/g, '')) || 0;
 };
 
-export default function TambahTransaksi({ navigation }) {
+export default function TambahTransaksi({ navigation, route }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [tanggal, setTanggal] = useState('');
   const [kasAwal, setKasAwal] = useState('');
@@ -42,6 +43,10 @@ export default function TambahTransaksi({ navigation }) {
   const [pengeluaran, setPengeluaran] = useState('');
   const [kasModal, setKasModal] = useState('Rp0');
   const [pilihRumus, setPilihRumus] = useState('pemasukan');
+  const [poinku, setPoinku] = useState('');
+  const [barang, setBarang] = useState('');
+  const [member, setMember] = useState(true);
+
 
   const [petani, setPetani] = useState([]);
   const [okepetani, setOkepetani] = useState({
@@ -49,7 +54,22 @@ export default function TambahTransaksi({ navigation }) {
     nama: '',
   })
 
+  const [transaksi, setTransaksi] = useState([]);
+
+  const getLaporan = async () => {
+    getData('transaksi').then(res => {
+      console.log(res);
+      const tmp = res ? res : [];
+      const sorted = [...tmp].reverse();
+      setTransaksi(sorted);
+    })
+  };
+
+
+
   useEffect(() => {
+    getLaporan();
+
     getData('petani').then(res => {
       // setPetani(res);
       let tmp = [];
@@ -85,6 +105,8 @@ export default function TambahTransaksi({ navigation }) {
       pemasukan,
       pengeluaran,
       kasModal,
+      poinku,
+      barang,
     };
 
     try {
@@ -92,18 +114,43 @@ export default function TambahTransaksi({ navigation }) {
       if (okepetani.id_petani.length == 0) {
         Alert.alert(MYAPP, 'Petani belum dipilih !')
       } else {
+        if (member) {
+          getData('petani').then(res => {
+            let tmp = res ? res : []; // 
+            let updated = [...tmp];
+            let editIndex = updated.findIndex(item => item.id === okepetani.id_petani);
+            console.log(editIndex);
+
+            updated[editIndex] = {
+              ...updated[editIndex],
+              poin: parseFloat(updated[editIndex].poin) - parseFloat(data.poinku),
+              last_update: moment().format('YYYYMMDDHHmmss'),
+            };
+
+            // Simpan kembali ke localStorage
+            storeData('petani', updated);
+
+
+          })
+
+
+        }
+
+
         getData('transaksi').then(res => {
           let tmp = res ? res : [];
           const KIRIM = {
             ...data,
             id: 'TR' + moment().format('YYMMDDHHmmss'),
+            tipe: route.params.tipe,
             id_petani: okepetani.id_petani,
             nama: okepetani.nama,
             kasAwal: parseNumber(data.kasAwal),
             pemasukan: parseNumber(data.pemasukan),
             pengeluaran: parseNumber(data.pengeluaran),
             kasModal: parseNumber(data.kasModal),
-            poin: data.timbangan,
+            poinku: data.poinku,
+            barang: data.barang,
             last_update: moment().format('YYYYMMDDHHmmss'),
           }
 
@@ -142,7 +189,7 @@ export default function TambahTransaksi({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.white }}>
-      <MyHeader title="Tambah Transaksi" />
+      <MyHeader title={`Tambah Transaksi ` + route.params.tipe} />
 
       <ScrollView>
         <View style={{ padding: 20 }}>
@@ -154,15 +201,72 @@ export default function TambahTransaksi({ navigation }) {
             onDateChange={(date) => setTanggal(date)}
           />
 
+          {route.params.tipe !== 'Kakao' &&
+            <View style={{
+              flexDirection: 'row',
+              paddingVertical: 20,
 
-          <MyPicker iconname='person' onChangeText={x => {
-            console.log(x);
-            let pe = x.split("_");
-            setOkepetani({
-              id_petani: pe[0],
-              nama: pe[1]
-            })
-          }} data={petani} />
+            }}>
+              <TouchableOpacity onPress={() => setMember(!member)} style={{
+                borderWidth: 1,
+                paddingHorizontal: 10,
+                backgroundColor: member ? colors.primary : colors.white,
+                paddingVertical: 4,
+                borderRadius: 10,
+                marginRight: 10,
+              }}>
+                <Text style={{
+                  color: member ? colors.white : colors.primary,
+                  fontFamily: fonts.secondary[600]
+                }}>Member</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setMember(!member)} style={{
+                borderWidth: 1,
+                backgroundColor: !member ? colors.primary : colors.white,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 10,
+                marginRight: 10,
+              }}>
+                <Text style={{
+                  color: !member ? colors.white : colors.primary,
+                  fontFamily: fonts.secondary[600]
+                }}>Non-Member</Text>
+              </TouchableOpacity>
+            </View>
+          }
+          {member &&
+
+            <MyPicker label="Petani / Member" iconname='person' onChangeText={x => {
+
+              let pe = x.split("_");
+              setOkepetani({
+                id_petani: pe[0],
+                nama: pe[1]
+              });
+              let Filterd = transaksi.filter(i => i.id_petani == pe[0]);
+              console.log(Filterd);
+              if (Filterd.length > 0) {
+                setKasAwal(formatRupiah(Filterd[0].kasModal))
+              } else {
+                setKasAwal('')
+              }
+
+            }} data={petani} />
+          }
+
+          {!member && <MyInput
+            label="Nama Petani:"
+            placeholder="Isi petani"
+
+            onChangeText={(val) => {
+              setOkepetani({
+                id_petani: 'NM' + moment().format('ymdhms'),
+                nama: val
+              });
+            }}
+          />
+          }
 
 
 
@@ -176,31 +280,48 @@ export default function TambahTransaksi({ navigation }) {
           />
 
           <MyInput
-            label="Timbangan (Kg) :"
-            placeholder="Isi Timbangan (Kg)"
+            label={route.params.tipe !== 'Kakao' ? `Item :` : `Timbangan (Kg) :`}
+            placeholder={route.params.tipe !== 'Kakao' ? `Isi Item` : `Isi Timbangan (Kg) :`}
             value={timbangan}
             keyboardType="numeric"
             onChangeText={setTimbangan}
           />
 
+          {route.params.tipe !== 'Kakao' && <MyInput
+            label={"Nama Barang"}
+            placeholder={`Isi Nama barang`}
+            value={barang}
+            onChangeText={setBarang}
+          />}
+
+          {route.params.tipe !== 'Kakao' && <MyInput
+            label={"Poin"}
+            placeholder={`Isi Poin dipakai`}
+            value={poinku}
+            keyboardType="numeric"
+            onChangeText={setPoinku}
+          />}
+
+
           <MyInput
             label="Inventory :"
             placeholder="Isi Inventory"
             value={inventory}
+            keyboardType="numeric"
             onChangeText={setInventory}
           />
 
           <MyInput
-            label="Pemasukan :"
-            placeholder="Isi Jumlah Pemasukan"
+            label={route.params.tipe !== 'Kakao' ? `Penjualan :` : `Pemasukan :`}
+            placeholder={route.params.tipe !== 'Kakao' ? `Isi Penjualan` : `Isi Pemasukan :`}
             value={pemasukan}
             keyboardType="numeric"
             onChangeText={(val) => setPemasukan(formatRupiah(val))}
           />
 
           <MyInput
-            label="Pengeluaran :"
-            placeholder="Isi Jumlah Pengeluaran"
+            label={route.params.tipe !== 'Kakao' ? `Pembelian : ` : `Pengeluaran :`}
+            placeholder={route.params.tipe !== 'Kakao' ? `Isi Pembelian` : `Isi Pengeluaran`}
             value={pengeluaran}
             keyboardType="numeric"
             onChangeText={(val) => setPengeluaran(formatRupiah(val))}

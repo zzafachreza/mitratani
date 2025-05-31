@@ -185,7 +185,7 @@ export default function PetaniDetail({ navigation, route }) {
 
                             <MyList label="Pengeluaran" value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pengeluaran)} />
                             <MyList label="Kas/Modal   " value={'Rp' + new Intl.NumberFormat('id-ID').format(item.kasModal)} />
-                            <MyList label="Poin" value={item.poin} />
+
                             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
                                 <TouchableOpacity
                                     style={{ marginRight: 10 }}

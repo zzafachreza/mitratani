@@ -10,7 +10,7 @@ import {
   FlatList,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { MyHeader } from '../../components';
+import { MyGap, MyHeader, MyInput } from '../../components';
 import { Icon } from 'react-native-elements';
 import QRCode from 'react-native-qrcode-svg';
 import { fonts, colors } from '../../utils';
@@ -23,6 +23,8 @@ export default function DataPetani({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [editNama, setEditNama] = useState('');
+  const [editID, setEditID] = useState('');
+  const [poin, setPoin] = useState('');
 
   const getPetani = async () => {
     getData('petani').then(res => {
@@ -40,6 +42,8 @@ export default function DataPetani({ navigation }) {
       updated[editIndex] = {
         ...updated[editIndex],
         nama: editNama,
+        id: editID,
+        poin: poin,
         last_update: moment().format('YYYYMMDDHHmmss'),
       };
 
@@ -138,6 +142,18 @@ export default function DataPetani({ navigation }) {
               </Text>
             </Text>
 
+            <Text
+              style={{
+                fontSize: 13,
+                marginBottom: 8,
+                fontFamily: fonts.primary[400],
+              }}>
+              Poin:{' '}
+              <Text style={{ fontWeight: '800', color: colors.primary }}>
+                {parseFloat(item.poin)}
+              </Text>
+            </Text>
+
             <View style={{ alignItems: 'center', marginVertical: 8 }}>
               <QRCode value={item.id} size={120} />
             </View>
@@ -162,6 +178,8 @@ export default function DataPetani({ navigation }) {
                 onPress={() => {
                   setEditIndex(index);
                   setEditNama(item.nama);
+                  setEditID(item.id);
+                  setPoin(item.poin)
                   setModalVisible(true);
                 }}>
                 <Icon type="ionicon" name="pencil" size={20} color="#F5A623" />
@@ -226,18 +244,31 @@ export default function DataPetani({ navigation }) {
               }}>
               Edit Nama Petani
             </Text>
-            <TextInput
+            <MyInput
+              label="ID Petani"
+              value={editID}
+              onChangeText={setEditID}
+              placeholder="Masukkan ID"
+
+            />
+            <MyGap jarak={10} />
+            <MyInput
+              label="Nama Petani"
               value={editNama}
               onChangeText={setEditNama}
-              placeholder="Masukkan nama baru"
-              style={{
-                borderWidth: 1,
-                borderColor: '#ccc',
-                padding: 10,
-                borderRadius: 8,
-                marginBottom: 20,
-              }}
+              placeholder="Masukkan nama"
+
             />
+            <MyGap jarak={10} />
+            <MyInput
+              label="Poin"
+              value={poin}
+              keyboardType='number-pad'
+              onChangeText={setPoin}
+              placeholder="Masukkan poin"
+
+            />
+            <MyGap jarak={20} />
 
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
               <TouchableOpacity

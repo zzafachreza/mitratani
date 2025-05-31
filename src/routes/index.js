@@ -77,6 +77,7 @@ import {
   Royalti,
   EditTransaksi,
   PetaniDetail,
+  Profit,
 
 
 
@@ -117,6 +118,15 @@ export default function Router() {
 
 
 
+
+      <Stack.Screen
+        name="Profit"
+        component={Profit}
+        options={{
+          headerShown: false,
+
+        }}
+      />
       <Stack.Screen
         name="Account"
         component={Account}

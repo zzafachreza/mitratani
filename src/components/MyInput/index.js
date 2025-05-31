@@ -35,12 +35,14 @@ export default function MyInput({
   const [tutup, setTutup] = useState(true);
   return (
     <View style={{ marginTop: 10 }}>
-      <Text style={{
-        fontFamily: fonts.primary[600],
-        color: colorlabel,
-        marginBottom: 8,
-        marginLeft: 10
-      }}>{label}</Text>
+      {!nolabel &&
+        <Text style={{
+          fontFamily: fonts.primary[600],
+          color: colorlabel,
+          marginBottom: 8,
+          marginLeft: 10
+        }}>{label}</Text>
+      }
       <View style={{
         height: 40,
         flexDirection: 'row', // Gunakan row agar TextInput dan label bisa sejajar

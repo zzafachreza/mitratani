@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Modal, FlatList, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { Color, colors } from '../../utils/colors';
 import { fonts } from '../../utils/fonts';
+import MyInput from '../MyInput';
 
 export default function MyPicker({
   label,
@@ -13,6 +14,13 @@ export default function MyPicker({
 }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(data[0]);  // Default selected item
+  const [dataList, setDataList] = useState(data);
+
+  console.log(dataList);
+
+  useEffect(() => {
+    setDataList(data);
+  }, [])
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -26,13 +34,27 @@ export default function MyPicker({
       <Text style={styles.itemText}>{item.label}</Text>
     </TouchableOpacity>
   );
+  const [ket, setKey] = useState({});
+
+  const filterPicker = (x) => {
+    console.log(x)
+    let filterd = dataList.filter(i => i.label.toLowerCase().indexOf(x.toLowerCase()) > -1);
+    console.log(filterd);
+    if (x.length == 0) {
+      setDataList(data)
+    } else if (filterd.length > 0) {
+      setDataList(filterd)
+    } else {
+      setDataList(data);
+    }
+  }
 
   return (
     <>
       <Text
         style={{
           fontFamily: fonts.primary[600],
-          color: colors.primary,
+          color: colors.black,
           marginBottom: 8,
           marginTop: 10,
           marginLeft: 10,
@@ -43,7 +65,10 @@ export default function MyPicker({
 
       <TouchableOpacity
         style={styles.pickerContainer}
-        onPress={() => setModalVisible(true)}
+        onPress={() => {
+          setModalVisible(true);
+          setDataList(data);
+        }}
       >
         <View style={styles.iconContainer}>
           <Icon type="ionicon" name={iconname} color={colors.black} size={22} />
@@ -62,12 +87,18 @@ export default function MyPicker({
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
+
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>
               <View style={styles.modalContainer}>
+                <View style={{
+                  paddingHorizontal: 10,
+                }}>
+                  <MyInput nolabel placeholder="Pencarian . . ." onChangeText={x => filterPicker(x)} />
+                </View>
                 <FlatList
-                  data={data}
+                  data={dataList}
                   renderItem={renderItem}
                   keyExtractor={(item) => item.value}
                   style={styles.flatList}

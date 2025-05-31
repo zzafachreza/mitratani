@@ -213,7 +213,7 @@ export default function EditTransaksi({ navigation, route }) {
                     />
 
 
-                    <MyInput
+                    {/* <MyInput
                         label="Poin :"
                         placeholder="Isi poin"
                         value={kirim.poin}
@@ -224,7 +224,7 @@ export default function EditTransaksi({ navigation, route }) {
                                 poin: val
                             })
                         }}
-                    />
+                    /> */}
 
                     <MyInput
                         label="Inventory :"

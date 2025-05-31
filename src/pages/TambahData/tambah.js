@@ -15,7 +15,9 @@ import moment from 'moment';
 
 export default function TambahPetani({ navigation }) {
   const [nama, setNama] = useState('');
+  const [ID, setID] = useState('PT' + moment().format('YYMMDDHHmmss'))
   const [modalVisible, setModalVisible] = useState(false);
+  const [poin, setPoin] = useState('');
 
   const simpanData = async () => {
     if (nama.length === 0) {
@@ -28,8 +30,9 @@ export default function TambahPetani({ navigation }) {
       getData('petani').then(res => {
         let tmp = res ? res : [];
         const KIRIM = {
-          id: 'PT' + moment().format('YYMMDDHHmmss'),
+          id: ID,
           nama: nama,
+          poin: poin,
           last_update: moment().format('YYYYMMDDHHmmss'),
         }
 
@@ -67,10 +70,24 @@ export default function TambahPetani({ navigation }) {
       <ScrollView>
         <View style={{ padding: 20 }}>
           <MyInput
+            label="ID Petani : "
+            placeholder="Masukan ID Petani"
+            value={ID}
+            onChangeText={setID}
+          />
+          <MyInput
             label="Nama Petani : "
             placeholder="Masukan Nama Petani"
             value={nama}
             onChangeText={setNama}
+          />
+
+          <MyInput
+            label="Poin : "
+            placeholder="Masukan Poin"
+            value={poin}
+            onChangeText={setPoin}
+            keyboardType="number-pad"
           />
         </View>
       </ScrollView>
