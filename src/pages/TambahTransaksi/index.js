@@ -118,18 +118,28 @@ export default function TambahTransaksi({ navigation, route }) {
         Alert.alert(MYAPP, 'Petani belum dipilih !')
       } else {
         if (member) {
+
+
           getData('petani').then(res => {
             let tmp = res ? res : []; // 
             let updated = [...tmp];
             let editIndex = updated.findIndex(item => item.id === okepetani.id_petani);
             console.log(editIndex);
 
-            updated[editIndex] = {
-              ...updated[editIndex],
-              poin: parseFloat(updated[editIndex].poin) - parseFloat(data.poinku),
-              last_update: moment().format('YYYYMMDDHHmmss'),
-            };
+            if (route.params.tipe !== 'Kakao') {
+              updated[editIndex] = {
+                ...updated[editIndex],
+                poin: parseFloat(updated[editIndex].poin) - parseFloat(data.poinku),
+                last_update: moment().format('YYYYMMDDHHmmss'),
+              };
 
+            } else {
+              updated[editIndex] = {
+                ...updated[editIndex],
+                poin: parseFloat(updated[editIndex].poin) + parseFloat(data.timbangan),
+                last_update: moment().format('YYYYMMDDHHmmss'),
+              };
+            }
             // Simpan kembali ke localStorage
             storeData('petani', updated);
 
@@ -258,7 +268,7 @@ export default function TambahTransaksi({ navigation, route }) {
                 id_petani: pe[0],
                 nama: pe[1]
               });
-              let Filterd = transaksi.filter(i => i.id_petani == pe[0]);
+              let Filterd = transaksi;
               console.log(Filterd);
               if (Filterd.length > 0) {
                 setKasAwal(formatRupiah(Filterd[0].kasModal))
