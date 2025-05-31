@@ -43,9 +43,11 @@ export default function TambahTransaksi({ navigation, route }) {
   const [pengeluaran, setPengeluaran] = useState('');
   const [kasModal, setKasModal] = useState('Rp0');
   const [pilihRumus, setPilihRumus] = useState('pemasukan');
+
+  const [member, setMember] = useState(true);
   const [poinku, setPoinku] = useState('');
   const [barang, setBarang] = useState('');
-  const [member, setMember] = useState(true);
+  const [beban, setBeban] = useState('');
 
 
   const [petani, setPetani] = useState([]);
@@ -107,6 +109,7 @@ export default function TambahTransaksi({ navigation, route }) {
       kasModal,
       poinku,
       barang,
+      beban
     };
 
     try {
@@ -145,12 +148,14 @@ export default function TambahTransaksi({ navigation, route }) {
             tipe: route.params.tipe,
             id_petani: okepetani.id_petani,
             nama: okepetani.nama,
+
             kasAwal: parseNumber(data.kasAwal),
             pemasukan: parseNumber(data.pemasukan),
             pengeluaran: parseNumber(data.pengeluaran),
             kasModal: parseNumber(data.kasModal),
             poinku: data.poinku,
             barang: data.barang,
+            beban: data.beban,
             last_update: moment().format('YYYYMMDDHHmmss'),
           }
 
@@ -201,39 +206,48 @@ export default function TambahTransaksi({ navigation, route }) {
             onDateChange={(date) => setTanggal(date)}
           />
 
-          {route.params.tipe !== 'Kakao' &&
-            <View style={{
-              flexDirection: 'row',
-              paddingVertical: 20,
+          <View style={{
+            flexDirection: 'row',
+            paddingVertical: 20,
 
+          }}>
+            <TouchableOpacity onPress={() => setMember(!member)} style={{
+              borderWidth: 1,
+              paddingHorizontal: 10,
+              backgroundColor: member ? colors.primary : colors.white,
+              paddingVertical: 4,
+              borderRadius: 10,
+              marginRight: 10,
             }}>
-              <TouchableOpacity onPress={() => setMember(!member)} style={{
-                borderWidth: 1,
-                paddingHorizontal: 10,
-                backgroundColor: member ? colors.primary : colors.white,
-                paddingVertical: 4,
-                borderRadius: 10,
-                marginRight: 10,
-              }}>
-                <Text style={{
-                  color: member ? colors.white : colors.primary,
-                  fontFamily: fonts.secondary[600]
-                }}>Member</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setMember(!member)} style={{
-                borderWidth: 1,
-                backgroundColor: !member ? colors.primary : colors.white,
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderRadius: 10,
-                marginRight: 10,
-              }}>
-                <Text style={{
-                  color: !member ? colors.white : colors.primary,
-                  fontFamily: fonts.secondary[600]
-                }}>Non-Member</Text>
-              </TouchableOpacity>
-            </View>
+              <Text style={{
+                color: member ? colors.white : colors.primary,
+                fontFamily: fonts.secondary[600]
+              }}>Member</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setMember(!member)} style={{
+              borderWidth: 1,
+              backgroundColor: !member ? colors.primary : colors.white,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: 10,
+              marginRight: 10,
+            }}>
+              <Text style={{
+                color: !member ? colors.white : colors.primary,
+                fontFamily: fonts.secondary[600]
+              }}>Non-Member</Text>
+            </TouchableOpacity>
+          </View>
+
+
+          {route.params.tipe == 'Kakao' &&
+            <MyInput
+              label="Beban Beban Lain :"
+              placeholder="Isi Beban Beban Lain"
+              value={beban}
+
+              onChangeText={(val) => setBeban(val)}
+            />
           }
           {member &&
 
@@ -267,7 +281,6 @@ export default function TambahTransaksi({ navigation, route }) {
             }}
           />
           }
-
 
 
 

@@ -45,6 +45,9 @@ export default function EditTransaksi({ navigation, route }) {
     const [pengeluaran, setPengeluaran] = useState('');
     const [kasModal, setKasModal] = useState('Rp0');
     const [pilihRumus, setPilihRumus] = useState('pemasukan');
+    const [poinku, setPoinku] = useState('');
+    const [barang, setBarang] = useState('');
+    const [beban, setBeban] = useState('');
 
     const [petani, setPetani] = useState([]);
     const [okepetani, setOkepetani] = useState({
@@ -102,7 +105,10 @@ export default function EditTransaksi({ navigation, route }) {
                         pemasukan: kirim.pemasukan,
                         pengeluaran: kirim.pengeluaran,
                         kasModal: kirim.kasModal,
-                        poin: kirim.poin,
+                        poinku: kirim.poinku,
+                        beban: kirim.beban,
+                        barang: kirim.barang,
+
                         last_update: moment().format('YYYYMMDDHHmmss'),
 
                     };
@@ -167,6 +173,14 @@ export default function EditTransaksi({ navigation, route }) {
                                 ...fonts.headline5,
                             }}>{kirim.nama}</Text>
                         </View>
+                        <View>
+                            <Text style={{
+                                ...fonts.caption,
+                            }}>Tipe Transaksi</Text>
+                            <Text style={{
+                                ...fonts.headline5,
+                            }}>{kirim.tipe}</Text>
+                        </View>
                     </View>
 
 
@@ -185,6 +199,55 @@ export default function EditTransaksi({ navigation, route }) {
 
 
 
+                    {kirim.tipe == 'Kakao' &&
+                        <MyInput
+                            label="Beban Beban Lain"
+                            placeholder="Isi Beban Beban Lain"
+                            value={kirim.beban}
+
+                            onChangeText={(val) => {
+                                setKirim({
+                                    ...kirim,
+                                    beban: val
+                                })
+                            }}
+                        />
+                    }
+
+
+                    {kirim.tipe !== 'Kakao' &&
+                        <MyInput
+                            label="Nama Barang"
+                            placeholder="Isi Nama Barang"
+                            value={kirim.barang}
+
+                            onChangeText={(val) => {
+                                setKirim({
+                                    ...kirim,
+                                    barang: val
+                                })
+                            }}
+                        />
+                    }
+
+                    {kirim.tipe !== 'Kakao' &&
+                        <MyInput
+                            label="Poin"
+                            placeholder="Isi poin"
+                            value={kirim.poinku}
+                            keyboardType='numeric'
+
+                            onChangeText={(val) => {
+                                setKirim({
+                                    ...kirim,
+                                    poinku: val
+                                })
+                            }}
+                        />
+
+                    }
+
+
 
                     <MyInput
                         label="Kas/Modal Awal :"
@@ -199,8 +262,10 @@ export default function EditTransaksi({ navigation, route }) {
                         }}
                     />
 
+
+
                     <MyInput
-                        label="Timbangan (Kg) :"
+                        label={kirim.tipe == 'Kakao' ? "Timbangan (Kg) :" : "Item :"}
                         placeholder="Isi Timbangan (Kg)"
                         value={kirim.timbangan}
                         keyboardType="numeric"
@@ -239,8 +304,8 @@ export default function EditTransaksi({ navigation, route }) {
                     />
 
                     <MyInput
-                        label="Pemasukan :"
-                        placeholder="Isi Jumlah Pemasukan"
+                        label={kirim.tipe == 'Kakao' ? "Pemasukan :" : "Penjualan :"}
+
                         value={formatRupiah(kirim.pemasukan)}
                         keyboardType="numeric"
                         onChangeText={(val) => {
@@ -252,8 +317,8 @@ export default function EditTransaksi({ navigation, route }) {
                     />
 
                     <MyInput
-                        label="Pengeluaran :"
-                        placeholder="Isi Jumlah Pengeluaran"
+                        label={kirim.tipe == 'Kakao' ? "Pengeluaran :" : "Pembelian :"}
+
                         value={formatRupiah(kirim.pengeluaran)}
                         keyboardType="numeric"
                         onChangeText={(val) => {

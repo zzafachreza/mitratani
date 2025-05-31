@@ -17,7 +17,7 @@ export default function TambahPetani({ navigation }) {
   const [nama, setNama] = useState('');
   const [ID, setID] = useState('PT' + moment().format('YYMMDDHHmmss'))
   const [modalVisible, setModalVisible] = useState(false);
-  const [poin, setPoin] = useState('');
+  const [poin, setPoin] = useState(0);
 
   const simpanData = async () => {
     if (nama.length === 0) {
