@@ -12,6 +12,7 @@ import { MyHeader, MyInput } from '../../components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getData, storeData } from '../../utils/localStorage';
 import moment from 'moment';
+import { showMessage } from 'react-native-flash-message';
 
 export default function Profit({ navigation }) {
     const [nama, setNama] = useState('');
@@ -21,7 +22,7 @@ export default function Profit({ navigation }) {
 
 
     const [kirim, setKirim] = useState({
-        last: '',
+        last: 0,
         inv: '',
         avg: '',
         new: '',
@@ -32,31 +33,16 @@ export default function Profit({ navigation }) {
 
     useEffect(() => {
         getData('profit').then(res => {
-            if (!res) {
-                setKirim({
-                    last: '',
-                    inv: '',
-                    avg: '',
-                    new: '',
-                    bfr: '',
-
-                })
-            } else {
-                setKirim({
-                    last: formatRupiah(res.last),
-                    inv: formatRupiah(res.inv),
-                    avg: formatRupiah(res.avg),
-                    new: formatRupiah(res.new),
-                    bfr: formatRupiah(res.bfr),
-                    total: formatRupiah(res.total),
-
-                })
-            }
+            console.log(res)
+            setKirim({
+                ...kirim,
+                last: res[res.length - 1].total
+            })
         })
     }, [])
 
     const formatRupiah = (angka) => {
-        if (!angka) return '0';
+        if (!angka) return angka;
         const num = angka.toString().replace(/[^,\d]/g, '');
         const split = num.split(',');
         const sisa = split[0].length % 3;
@@ -82,29 +68,51 @@ export default function Profit({ navigation }) {
             new: parseFloat(parseNumber(kirim.new)),
             bfr: parseFloat(parseNumber(kirim.bfr)),
             total: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr)),
-            last: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr))
+
 
         });
 
         setKirim({
+            id: moment().format('YYYYMMDDHHmmss'),
             inv: parseFloat(parseNumber(kirim.inv)),
             avg: parseFloat(parseNumber(kirim.avg)),
             new: parseFloat(parseNumber(kirim.new)),
             bfr: parseFloat(parseNumber(kirim.bfr)),
             total: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr)),
-            last: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr))
+
 
         })
 
-        storeData('profit', {
-            inv: parseFloat(parseNumber(kirim.inv)),
-            avg: parseFloat(parseNumber(kirim.avg)),
-            new: parseFloat(parseNumber(kirim.new)),
-            bfr: parseFloat(parseNumber(kirim.bfr)),
-            total: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr)),
-            last: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr))
+        getData('profit').then(res => {
+            let tmp = res ? res : [];
+            const KIRIM = {
+                ...kirim,
+                id: moment().format('YYYYMMDDHHmmss'),
+                inv: parseFloat(parseNumber(kirim.inv)),
+                avg: parseFloat(parseNumber(kirim.avg)),
+                new: parseFloat(parseNumber(kirim.new)),
+                bfr: parseFloat(parseNumber(kirim.bfr)),
 
-        });
+                total: parseFloat(parseNumber(kirim.inv)) * parseFloat(parseNumber(kirim.avg)) + parseFloat(parseNumber(kirim.new)) - parseFloat(parseNumber(kirim.bfr)),
+
+            }
+
+            tmp.push(KIRIM); // tambahkan data baru
+            storeData('profit', tmp);
+
+
+            setTimeout(() => {
+                showMessage({
+                    type: 'success',
+                    message: 'Berhasil di simpan !'
+                })
+                navigation.goBack()
+            }, 500); // modal tampil 1.5 detik
+
+
+        })
+
+
         // navigation.goBack();
 
 

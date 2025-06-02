@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MyHeader } from '../../components';
+import { MyButton, MyHeader } from '../../components';
 import { fonts, colors } from '../../utils';
 import { Icon } from 'react-native-elements';
 import moment from 'moment';
@@ -20,9 +20,10 @@ import NetInfo from '@react-native-community/netinfo';
 import XLSX from 'xlsx';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
-import { getData } from '../../utils/localStorage';
+import { getData, storeData } from '../../utils/localStorage';
 import 'intl';
 import 'intl/locale-data/jsonp/id';
+import { showMessage } from 'react-native-flash-message';
 
 export default function PetaniDetail({ navigation, route }) {
     const [data, setData] = useState([]);
@@ -128,6 +129,32 @@ export default function PetaniDetail({ navigation, route }) {
         const focus = navigation.addListener('focus', getLaporan);
         return focus;
     }, [navigation]);
+
+    const deleteAll = () => {
+        Alert.alert(
+            'Konfirmasi',
+            'Yakin ingin menghapus data transaksi petani ini?',
+            [
+                { text: 'Batal', style: 'cancel' },
+                {
+                    text: 'Hapus',
+                    style: 'destructive',
+                    onPress: async () => {
+                        getData('transaksi').then(res => {
+                            let filted = res.filter(i => i.id_petani !== route.params.id_petani);
+                            console.log(filted);
+                            storeData('transaksi', filted);
+                            getLaporan();
+                            showMessage({
+                                type: 'success',
+                                message: 'Berhasil dihapus semua !'
+                            })
+                        })
+                    },
+                },
+            ]
+        );
+    };
 
     // Filter hasil berdasarkan nama petani
     // const filteredData = data.filter(item =>
@@ -281,6 +308,8 @@ export default function PetaniDetail({ navigation, route }) {
                         </Text>
                     </View>
                 </TouchableNativeFeedback>
+
+                <MyButton onPress={deleteAll} warna={colors.danger} title="Hapus Semua Transaksi Petani ini" />
             </View>
 
             {/* Modal Edit */}

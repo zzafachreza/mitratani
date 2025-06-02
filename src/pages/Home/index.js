@@ -51,11 +51,13 @@ export default function Home({ navigation, route }) {
       <ScrollView>
         <View style={{ padding: 20 }}>
 
-          <Text style={{
-            fontFamily: fonts.primary[500],
-            color: colors.primary,
-            fontSize: 18
-          }}>Selamat Datang</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Petunjuk')}>
+            <Text style={{
+              fontFamily: fonts.primary[500],
+              color: colors.primary,
+              fontSize: 18
+            }}>Selamat Datang</Text>
+          </TouchableOpacity>
 
           <View style={{
             flexDirection: 'row',

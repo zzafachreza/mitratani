@@ -99,7 +99,7 @@ export default function TambahData({ navigation }) {
             </View>
           </TouchableNativeFeedback>
 
-          <TouchableNativeFeedback onPress={() => navigation.navigate('Profit')}>
+          <TouchableNativeFeedback onPress={() => navigation.navigate('ProfitList')}>
             <View style={{
               padding: 10,
               backgroundColor: colors.primary,

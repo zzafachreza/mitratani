@@ -23,12 +23,14 @@ import Royalti from './Loyalty';
 import EditTransaksi from './TambahTransaksi/EditTransaksi';
 import PetaniDetail from './TambahData/PetaniDetail';
 import Profit from './TambahData/Profit';
+import ProfitList from './TambahData/ProfitList';
 
 
 
 export {
   Splash,
   Profit,
+  ProfitList,
   Home,
   PetaniDetail,
   EditTransaksi,

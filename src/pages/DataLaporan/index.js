@@ -236,7 +236,7 @@ export default function DataLaporan({ navigation }) {
               <MyList label={item.tipe == 'Kakao' ? 'Pemasukan' : 'Penjualan'} value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pemasukan)} />
               {item.tipe !== 'Kakao' && <MyList label="Nama Barang" value={item.barang} />}
 
-              {item.tipe !== 'Poin' && <MyList label="Poin" value={item.poinku} />}
+              {item.tipe !== 'Kakao' && <MyList label="Poin" value={item.poinku} />}
               <MyList label={item.tipe == 'Kakao' ? 'Pengeluaran' : 'Pembelian'} value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pengeluaran)} />
               <MyList label="Kas/Modal   " value={'Rp' + new Intl.NumberFormat('id-ID').format(item.kasModal)} />
               {/* <MyList label="Poin" value={item.poin} /> */}

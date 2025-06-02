@@ -200,6 +200,14 @@ export default function TambahTransaksi({ navigation, route }) {
       const today = moment().format('YYYY-MM-DD');
       setTanggal(today);
     }
+
+    getData('transaksi').then(trx => {
+      if (trx.length > 0) {
+        setKasAwal(formatRupiah(trx[trx.length - 1].kasModal))
+      } else {
+        setKasAwal('')
+      }
+    })
   }, []);
 
   return (
@@ -268,13 +276,6 @@ export default function TambahTransaksi({ navigation, route }) {
                 id_petani: pe[0],
                 nama: pe[1]
               });
-              let Filterd = transaksi;
-              console.log(Filterd);
-              if (Filterd.length > 0) {
-                setKasAwal(formatRupiah(Filterd[0].kasModal))
-              } else {
-                setKasAwal('')
-              }
 
             }} data={petani} />
           }

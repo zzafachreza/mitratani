@@ -71,7 +71,9 @@ export default function Loyalty({ navigation, route }) {
     const tmp = await getData('transaksi');
     const petani = await getData('petani');
 
-    const grouped = tmp.reduce((acc, curr) => {
+    console.log(tmp.filter(i => i.id_petani.substr(0, 2) !== "NM"))
+
+    const grouped = tmp.filter(i => i.id_petani.substr(0, 2) !== 'NM').reduce((acc, curr) => {
       const nama = curr.nama;
 
       if (!acc[nama]) {

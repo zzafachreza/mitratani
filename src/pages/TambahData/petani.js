@@ -90,6 +90,8 @@ export default function DataPetani({ navigation }) {
   };
 
 
+
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <MyHeader title="Data Petani" />
