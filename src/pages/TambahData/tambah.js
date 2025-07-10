@@ -6,18 +6,20 @@ import {
   Modal,
   Image,
 } from 'react-native';
-import React, { useState } from 'react';
-import { colors, fonts } from '../../utils';
-import { MyHeader, MyInput } from '../../components';
+import React, {useState} from 'react';
+import {colors, fonts} from '../../utils';
+import {MyHeader, MyInput} from '../../components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getData, storeData } from '../../utils/localStorage';
+import {getData, storeData} from '../../utils/localStorage';
 import moment from 'moment';
 
-export default function TambahPetani({ navigation }) {
+export default function TambahPetani({navigation}) {
   const [nama, setNama] = useState('');
-  const [ID, setID] = useState('PT' + moment().format('YYMMDDHHmmss'))
+  const [ID, setID] = useState('PT' + moment().format('YYMMDDHHmmss'));
   const [modalVisible, setModalVisible] = useState(false);
   const [poin, setPoin] = useState(0);
+  const [telepon, setTelepon] = useState('');
+  const [alamat, setAlamat] = useState('');
 
   const simpanData = async () => {
     if (nama.length === 0) {
@@ -33,8 +35,10 @@ export default function TambahPetani({ navigation }) {
           id: ID,
           nama: nama,
           poin: poin,
+          telepon: telepon,
+          alamat: alamat,
           last_update: moment().format('YYYYMMDDHHmmss'),
-        }
+        };
 
         tmp.push(KIRIM); // tambahkan data baru
         storeData('petani', tmp);
@@ -42,11 +46,9 @@ export default function TambahPetani({ navigation }) {
         setModalVisible(true);
         setTimeout(() => {
           setModalVisible(false);
-          navigation.goBack()
+          navigation.goBack();
         }, 500); // modal tampil 1.5 detik
-
-
-      })
+      });
       // const dataLama = JSON.parse(await AsyncStorage.getItem('DATA_PETANI')) || [];
       // const dataBaru = [
       //   ...dataLama,
@@ -56,8 +58,6 @@ export default function TambahPetani({ navigation }) {
       //   },
       // ];
       // await AsyncStorage.setItem('DATA_PETANI', JSON.stringify(dataBaru));
-
-
     } catch (error) {
       console.log(error);
       alert('Gagal menyimpan data');
@@ -65,10 +65,10 @@ export default function TambahPetani({ navigation }) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.white }}>
+    <View style={{flex: 1, backgroundColor: colors.white}}>
       <MyHeader title="Tambah Data Petani" />
       <ScrollView>
-        <View style={{ padding: 20 }}>
+        <View style={{padding: 20}}>
           <MyInput
             label="ID Petani : "
             placeholder="Masukan ID Petani"
@@ -83,6 +83,21 @@ export default function TambahPetani({ navigation }) {
           />
 
           <MyInput
+            label="Telepon Petani : "
+            placeholder="Masukan Telepon Petani"
+            value={telepon}
+            keyboardType="phone-pad"
+            onChangeText={setTelepon}
+          />
+
+          <MyInput
+            label="Alamat Petani : "
+            placeholder="Masukan alamat Petani"
+            value={alamat}
+            onChangeText={setAlamat}
+          />
+
+          <MyInput
             label="Poin : "
             placeholder="Masukan Poin"
             value={poin}
@@ -92,7 +107,7 @@ export default function TambahPetani({ navigation }) {
         </View>
       </ScrollView>
 
-      <View style={{ padding: 20 }}>
+      <View style={{padding: 20}}>
         <TouchableNativeFeedback onPress={simpanData}>
           <View
             style={{
@@ -141,7 +156,7 @@ export default function TambahPetani({ navigation }) {
             </Text>
             <Image
               source={require('../../assets/success.png')} // sesuaikan dengan lokasi file PNG kamu
-              style={{ width: 100, height: 100 }}
+              style={{width: 100, height: 100}}
               resizeMode="contain"
             />
           </View>

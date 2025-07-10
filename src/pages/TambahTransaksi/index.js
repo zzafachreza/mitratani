@@ -8,15 +8,15 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { MyCalendar, MyHeader, MyInput, MyPicker } from '../../components';
-import { colors, fonts } from '../../utils';
+import React, {useState, useEffect} from 'react';
+import {MyCalendar, MyHeader, MyInput, MyPicker} from '../../components';
+import {colors, fonts} from '../../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
-import { Picker } from '@react-native-picker/picker';
-import { getData, MYAPP, storeData } from '../../utils/localStorage';
+import {Picker} from '@react-native-picker/picker';
+import {getData, MYAPP, storeData} from '../../utils/localStorage';
 
-const formatRupiah = (angka) => {
+const formatRupiah = angka => {
   if (!angka) return '0';
   const num = angka.toString().replace(/[^,\d]/g, '');
   const split = num.split(',');
@@ -29,11 +29,11 @@ const formatRupiah = (angka) => {
   return 'Rp' + (split[1] !== undefined ? rupiah + ',' + split[1] : rupiah);
 };
 
-const parseNumber = (str) => {
+const parseNumber = str => {
   return parseInt(str.replace(/[^0-9]/g, '')) || 0;
 };
 
-export default function TambahTransaksi({ navigation, route }) {
+export default function TambahTransaksi({navigation, route}) {
   const [modalVisible, setModalVisible] = useState(false);
   const [tanggal, setTanggal] = useState('');
   const [kasAwal, setKasAwal] = useState('');
@@ -49,12 +49,11 @@ export default function TambahTransaksi({ navigation, route }) {
   const [barang, setBarang] = useState('');
   const [beban, setBeban] = useState('');
 
-
   const [petani, setPetani] = useState([]);
   const [okepetani, setOkepetani] = useState({
     id_petani: '',
     nama: '',
-  })
+  });
 
   const [transaksi, setTransaksi] = useState([]);
 
@@ -64,10 +63,8 @@ export default function TambahTransaksi({ navigation, route }) {
       const tmp = res ? res : [];
       const sorted = [...tmp].reverse();
       setTransaksi(sorted);
-    })
+    });
   };
-
-
 
   useEffect(() => {
     getLaporan();
@@ -78,12 +75,12 @@ export default function TambahTransaksi({ navigation, route }) {
       res.map(item => {
         tmp.push({
           value: item.id + '_' + item.nama,
-          label: item.id + ' / ' + item.nama
+          label: item.id + ' / ' + item.nama,
         });
         setPetani(tmp);
-      })
+      });
       console.log(res);
-    })
+    });
     const awal = parseNumber(kasAwal);
     const masuk = parseNumber(pemasukan);
     const keluar = parseNumber(pengeluaran);
@@ -109,46 +106,41 @@ export default function TambahTransaksi({ navigation, route }) {
       kasModal,
       poinku,
       barang,
-      beban
+      beban,
     };
 
     try {
-
       if (okepetani.id_petani.length == 0) {
-        Alert.alert(MYAPP, 'Petani belum dipilih !')
+        Alert.alert(MYAPP, 'Petani belum dipilih !');
       } else {
         if (member) {
-
-
           getData('petani').then(res => {
-            let tmp = res ? res : []; // 
+            let tmp = res ? res : []; //
             let updated = [...tmp];
-            let editIndex = updated.findIndex(item => item.id === okepetani.id_petani);
+            let editIndex = updated.findIndex(
+              item => item.id === okepetani.id_petani,
+            );
             console.log(editIndex);
+
+            let THEPOINT = updated[editIndex].poin ?? 0;
 
             if (route.params.tipe !== 'Kakao') {
               updated[editIndex] = {
                 ...updated[editIndex],
-                poin: parseFloat(updated[editIndex].poin) - parseFloat(data.poinku),
+                poin: parseFloat(THEPOINT) - parseFloat(data.poinku),
                 last_update: moment().format('YYYYMMDDHHmmss'),
               };
-
             } else {
               updated[editIndex] = {
                 ...updated[editIndex],
-                poin: parseFloat(updated[editIndex].poin) + parseFloat(data.timbangan),
+                poin: parseFloat(THEPOINT) + parseFloat(data.timbangan),
                 last_update: moment().format('YYYYMMDDHHmmss'),
               };
             }
             // Simpan kembali ke localStorage
             storeData('petani', updated);
-
-
-          })
-
-
+          });
         }
-
 
         getData('transaksi').then(res => {
           let tmp = res ? res : [];
@@ -163,12 +155,11 @@ export default function TambahTransaksi({ navigation, route }) {
             pemasukan: parseNumber(data.pemasukan),
             pengeluaran: parseNumber(data.pengeluaran),
             kasModal: parseNumber(data.kasModal),
-            poinku: data.poinku,
+            poinku: parseFloat(data.poinku ?? 0),
             barang: data.barang,
             beban: data.beban,
             last_update: moment().format('YYYYMMDDHHmmss'),
-          }
-
+          };
 
           tmp.push(KIRIM); // tambahkan data baru
           storeData('transaksi', tmp);
@@ -177,19 +168,12 @@ export default function TambahTransaksi({ navigation, route }) {
             setModalVisible(false);
             navigation.replace('MainApp');
           }, 500);
-
-
-        })
+        });
       }
-
-
-
 
       // const lama = JSON.parse(await AsyncStorage.getItem('DATA_TRANSAKSI')) || [];
       // const baru = [...lama, data];
       // await AsyncStorage.setItem('DATA_TRANSAKSI', JSON.stringify(baru));
-
-
     } catch (e) {
       alert('Gagal menyimpan transaksi');
     }
@@ -203,129 +187,308 @@ export default function TambahTransaksi({ navigation, route }) {
 
     getData('transaksi').then(trx => {
       if (trx.length > 0) {
-        setKasAwal(formatRupiah(trx[trx.length - 1].kasModal))
+        setKasAwal(formatRupiah(trx[trx.length - 1].kasModal));
       } else {
-        setKasAwal('')
+        setKasAwal('');
       }
-    })
+    });
   }, []);
 
+  const DATA_BARANG = [
+    {
+      label: 'Alika 100ml',
+      value: 'Alika 100ml',
+    },
+    {
+      label: 'Alika 250ml',
+      value: 'Alika 250ml',
+    },
+    {
+      label: 'Narkozeb 400 gr',
+      value: 'Narkozeb 400 gr',
+    },
+    {
+      label: 'Nordox 1 kg',
+      value: 'Nordox 1 kg',
+    },
+    {
+      label: 'Nordox 500 gr',
+      value: 'Nordox 500 gr',
+    },
+    {
+      label: 'Double stick 1 liter',
+      value: 'Double stick 1 liter',
+    },
+    {
+      label: 'Sanvit 1 liter',
+      value: 'Sanvit 1 liter',
+    },
+    {
+      label: 'Kanon',
+      value: 'Kanon',
+    },
+    {
+      label: 'Regent 250 ml',
+      value: 'Regent 250 ml',
+    },
+    {
+      label: 'Regent 100 ml',
+      value: 'Regent 100 ml',
+    },
+    {
+      label: 'Gandasil D 500 gr',
+      value: 'Gandasil D 500 gr',
+    },
+    {
+      label: 'Gandasil B 500 gr',
+      value: 'Gandasil B 500 gr',
+    },
+    {
+      label: 'Gandasil D 100 gr',
+      value: 'Gandasil D 100 gr',
+    },
+    {
+      label: 'Gandasil B 100 gr',
+      value: 'Gandasil B 100 gr',
+    },
+    {
+      label: 'Mkp 1 kg',
+      value: 'Mkp 1 kg',
+    },
+    {
+      label: 'Regent sachet',
+      value: 'Regent sachet',
+    },
+    {
+      label: 'Gunting pangkas fukuda',
+      value: 'Gunting pangkas fukuda',
+    },
+    {
+      label: 'Gunting pangkas teleskopik 2 m',
+      value: 'Gunting pangkas teleskopik 2 m',
+    },
+    {
+      label: 'Gunting pangkas teleskopik 3 m',
+      value: 'Gunting pangkas teleskopik 3 m',
+    },
+    {
+      label: 'Gunting dahan tarik',
+      value: 'Gunting dahan tarik',
+    },
+    {
+      label: 'Alat oles',
+      value: 'Alat oles',
+    },
+    {
+      label: 'Gergaji',
+      value: 'Gergaji',
+    },
+    {
+      label: 'Chainsaw',
+      value: 'Chainsaw',
+    },
+    {
+      label: 'Gunting dahan medium',
+      value: 'Gunting dahan medium',
+    },
+    {
+      label: 'Gunting dahan premium',
+      value: 'Gunting dahan premium',
+    },
+    {
+      label: 'chlormite',
+      value: 'chlormite',
+    },
+    {
+      label: 'Sabit panen massepe',
+      value: 'Sabit panen massepe',
+    },
+    {
+      label: 'Alat petik teleskopik',
+      value: 'Alat petik teleskopik',
+    },
+    {
+      label: 'Sarung tangan',
+      value: 'Sarung tangan',
+    },
+    {
+      label: 'Karung',
+      value: 'Karung',
+    },
+    {
+      label: 'Pisau okulasi',
+      value: 'Pisau okulasi',
+    },
+    {
+      label: 'Plastik okulasi kecil',
+      value: 'Plastik okulasi kecil',
+    },
+    {
+      label: 'Plastik okulasi besar',
+      value: 'Plastik okulasi besar',
+    },
+    {
+      label: 'Parang',
+      value: 'Parang',
+    },
+  ];
+
   return (
-    <View style={{ flex: 1, backgroundColor: colors.white }}>
+    <View style={{flex: 1, backgroundColor: colors.white}}>
       <MyHeader title={`Tambah Transaksi ` + route.params.tipe} />
 
       <ScrollView>
-        <View style={{ padding: 20 }}>
+        <View style={{padding: 20}}>
           <MyCalendar
             label="Tanggal :"
             placeholder="Pilih Tanggal"
             iconname="calendar"
             value={tanggal}
-            onDateChange={(date) => setTanggal(date)}
+            onDateChange={date => setTanggal(date)}
           />
 
-          <View style={{
-            flexDirection: 'row',
-            paddingVertical: 20,
-
-          }}>
-            <TouchableOpacity onPress={() => setMember(!member)} style={{
-              borderWidth: 1,
-              paddingHorizontal: 10,
-              backgroundColor: member ? colors.primary : colors.white,
-              paddingVertical: 4,
-              borderRadius: 10,
-              marginRight: 10,
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingVertical: 20,
             }}>
-              <Text style={{
-                color: member ? colors.white : colors.primary,
-                fontFamily: fonts.secondary[600]
-              }}>Member</Text>
+            <TouchableOpacity
+              onPress={() => setMember(!member)}
+              style={{
+                borderWidth: 1,
+                paddingHorizontal: 10,
+                backgroundColor: member ? colors.primary : colors.white,
+                paddingVertical: 4,
+                borderRadius: 10,
+                marginRight: 10,
+              }}>
+              <Text
+                style={{
+                  color: member ? colors.white : colors.primary,
+                  fontFamily: fonts.secondary[600],
+                }}>
+                Member
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setMember(!member)} style={{
-              borderWidth: 1,
-              backgroundColor: !member ? colors.primary : colors.white,
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 10,
-              marginRight: 10,
-            }}>
-              <Text style={{
-                color: !member ? colors.white : colors.primary,
-                fontFamily: fonts.secondary[600]
-              }}>Non-Member</Text>
+            <TouchableOpacity
+              onPress={() => setMember(!member)}
+              style={{
+                borderWidth: 1,
+                backgroundColor: !member ? colors.primary : colors.white,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 10,
+                marginRight: 10,
+              }}>
+              <Text
+                style={{
+                  color: !member ? colors.white : colors.primary,
+                  fontFamily: fonts.secondary[600],
+                }}>
+                Non-Member
+              </Text>
             </TouchableOpacity>
           </View>
 
-
-          {route.params.tipe == 'Kakao' &&
+          {route.params.tipe == 'Kakao' && (
             <MyInput
               label="Beban Beban Lain :"
               placeholder="Isi Beban Beban Lain"
               value={beban}
-
-              onChangeText={(val) => setBeban(val)}
+              onChangeText={val => setBeban(val)}
             />
-          }
-          {member &&
+          )}
+          {member && (
+            <MyPicker
+              label="Petani / Member"
+              iconname="person"
+              onChangeText={x => {
+                let pe = x.split('_');
+                setOkepetani({
+                  id_petani: pe[0],
+                  nama: pe[1],
+                });
+              }}
+              data={petani}
+            />
+          )}
 
-            <MyPicker label="Petani / Member" iconname='person' onChangeText={x => {
-
-              let pe = x.split("_");
-              setOkepetani({
-                id_petani: pe[0],
-                nama: pe[1]
-              });
-
-            }} data={petani} />
-          }
-
-          {!member && <MyInput
-            label="Nama Petani:"
-            placeholder="Isi petani"
-
-            onChangeText={(val) => {
-              setOkepetani({
-                id_petani: 'NM' + moment().format('ymdhms'),
-                nama: val
-              });
-            }}
-          />
-          }
-
-
+          {!member && (
+            <MyInput
+              label="Nama Petani:"
+              placeholder="Isi petani"
+              onChangeText={val => {
+                setOkepetani({
+                  id_petani: 'NM' + moment().format('ymdhms'),
+                  nama: val,
+                });
+              }}
+            />
+          )}
 
           <MyInput
             label="Kas/Modal Awal :"
             placeholder="Isi Kas/Modal Awal"
             value={kasAwal}
             keyboardType="numeric"
-            onChangeText={(val) => setKasAwal(formatRupiah(val))}
+            onChangeText={val => setKasAwal(formatRupiah(val))}
           />
 
           <MyInput
-            label={route.params.tipe !== 'Kakao' ? `Item :` : `Timbangan (Kg) :`}
-            placeholder={route.params.tipe !== 'Kakao' ? `Isi Item` : `Isi Timbangan (Kg) :`}
+            label={
+              route.params.tipe !== 'Kakao' ? `Item :` : `Timbangan (Kg) :`
+            }
+            placeholder={
+              route.params.tipe !== 'Kakao'
+                ? `Isi Item`
+                : `Isi Timbangan (Kg) :`
+            }
             value={timbangan}
             keyboardType="numeric"
             onChangeText={setTimbangan}
           />
 
-          {route.params.tipe !== 'Kakao' && <MyInput
-            label={"Nama Barang"}
-            placeholder={`Isi Nama barang`}
-            value={barang}
-            onChangeText={setBarang}
-          />}
+          {route.params.tipe !== 'Kakao' && (
+            <MyPicker
+              iconname="list"
+              value={barang}
+              label="Nama Barang"
+              data={DATA_BARANG}
+              onChangeText={x => {
+                setBarang(x);
+                getData('transaksi').then(res => {
+                  let tmp = res ? res : [];
+                  if (tmp.filter(i => i.barang == x).length > 0) {
+                    let sisa =
+                      parseFloat(
+                        tmp.filter(i => i.barang == x)[
+                          tmp.filter(i => i.barang == x).length - 1
+                        ].inventory,
+                      ) -
+                      parseFloat(
+                        tmp.filter(i => i.barang == x)[
+                          tmp.filter(i => i.barang == x).length - 1
+                        ].timbangan,
+                      );
 
-          {route.params.tipe !== 'Kakao' && <MyInput
-            label={"Poin"}
-            placeholder={`Isi Poin dipakai`}
-            value={poinku}
-            keyboardType="numeric"
-            onChangeText={setPoinku}
-          />}
+                    setInventory(sisa.toString());
+                  } else {
+                    setInventory('');
+                  }
+                });
+              }}
+            />
+          )}
 
+          {route.params.tipe !== 'Kakao' && (
+            <MyInput
+              label={'Poin'}
+              placeholder={`Isi Poin dipakai`}
+              value={poinku}
+              keyboardType="numeric"
+              onChangeText={setPoinku}
+            />
+          )}
 
           <MyInput
             label="Inventory :"
@@ -336,24 +499,36 @@ export default function TambahTransaksi({ navigation, route }) {
           />
 
           <MyInput
-            label={route.params.tipe !== 'Kakao' ? `Penjualan :` : `Pemasukan :`}
-            placeholder={route.params.tipe !== 'Kakao' ? `Isi Penjualan` : `Isi Pemasukan :`}
+            label={
+              route.params.tipe !== 'Kakao' ? `Penjualan :` : `Pemasukan :`
+            }
+            placeholder={
+              route.params.tipe !== 'Kakao'
+                ? `Isi Penjualan`
+                : `Isi Pemasukan :`
+            }
             value={pemasukan}
             keyboardType="numeric"
-            onChangeText={(val) => setPemasukan(formatRupiah(val))}
+            onChangeText={val => setPemasukan(formatRupiah(val))}
           />
 
           <MyInput
-            label={route.params.tipe !== 'Kakao' ? `Pembelian : ` : `Pengeluaran :`}
-            placeholder={route.params.tipe !== 'Kakao' ? `Isi Pembelian` : `Isi Pengeluaran`}
+            label={
+              route.params.tipe !== 'Kakao' ? `Pembelian : ` : `Pengeluaran :`
+            }
+            placeholder={
+              route.params.tipe !== 'Kakao'
+                ? `Isi Pembelian`
+                : `Isi Pengeluaran`
+            }
             value={pengeluaran}
             keyboardType="numeric"
-            onChangeText={(val) => setPengeluaran(formatRupiah(val))}
+            onChangeText={val => setPengeluaran(formatRupiah(val))}
           />
 
-          {(pemasukan && pengeluaran) ? (
-            <View style={{ marginVertical: 10 }}>
-              <Text style={{ fontFamily: fonts.primary[600], marginBottom: 6 }}>
+          {pemasukan && pengeluaran ? (
+            <View style={{marginVertical: 10}}>
+              <Text style={{fontFamily: fonts.primary[600], marginBottom: 6}}>
                 Gunakan perhitungan dari:
               </Text>
               <View
@@ -366,7 +541,7 @@ export default function TambahTransaksi({ navigation, route }) {
                 }}>
                 <Picker
                   selectedValue={pilihRumus}
-                  onValueChange={(itemValue) => setPilihRumus(itemValue)}>
+                  onValueChange={itemValue => setPilihRumus(itemValue)}>
                   <Picker.Item label="Pemasukan" value="pemasukan" />
                   <Picker.Item label="Pengeluaran" value="pengeluaran" />
                 </Picker>
@@ -374,11 +549,7 @@ export default function TambahTransaksi({ navigation, route }) {
             </View>
           ) : null}
 
-          <MyInput
-            label="Kas/Modal :"
-            value={kasModal}
-            editable={false}
-          />
+          <MyInput label="Kas/Modal :" value={kasModal} editable={false} />
 
           <TouchableNativeFeedback onPress={simpanTransaksi}>
             <View
@@ -431,7 +602,7 @@ export default function TambahTransaksi({ navigation, route }) {
             </Text>
             <Image
               source={require('../../assets/success.png')}
-              style={{ width: 100, height: 100 }}
+              style={{width: 100, height: 100}}
               resizeMode="contain"
             />
           </View>

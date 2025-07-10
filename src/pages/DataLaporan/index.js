@@ -9,23 +9,23 @@ import {
   TouchableNativeFeedback,
   FlatList,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MyHeader } from '../../components';
-import { fonts, colors } from '../../utils';
-import { Icon } from 'react-native-elements';
+import {MyButton, MyHeader} from '../../components';
+import {fonts, colors} from '../../utils';
+import {Icon} from 'react-native-elements';
 import moment from 'moment';
 import 'moment/locale/id';
 import NetInfo from '@react-native-community/netinfo';
 import XLSX from 'xlsx';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
-import { getData } from '../../utils/localStorage';
+import {getData, MYAPP, storeData} from '../../utils/localStorage';
 import 'intl';
-import ZavalabsScanner from 'react-native-zavalabs-scanner'
+import ZavalabsScanner from 'react-native-zavalabs-scanner';
 import 'intl/locale-data/jsonp/id';
 
-export default function DataLaporan({ navigation }) {
+export default function DataLaporan({navigation}) {
   const [data, setData] = useState([]);
   const [editVisible, setEditVisible] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
@@ -52,7 +52,7 @@ export default function DataLaporan({ navigation }) {
     kasModal: 'Kas/Modal',
   };
 
-  const formatRupiah = (angka) => {
+  const formatRupiah = angka => {
     let number_string = angka.replace(/[^,\d]/g, '').toString();
     let split = number_string.split(',');
     let sisa = split[0].length % 3;
@@ -70,11 +70,13 @@ export default function DataLaporan({ navigation }) {
       const tmp = res ? res : [];
       let brt = 0;
       tmp.map(i => {
-        brt += parseFloat(i.timbangan);
+        if (i.tipe == 'Kakao') {
+          brt += parseFloat(i.timbangan);
+        }
       });
       setBerat(brt);
       setData(tmp);
-    })
+    });
   };
 
   const simpanEdit = async () => {
@@ -90,14 +92,14 @@ export default function DataLaporan({ navigation }) {
       if (!state.isConnected) {
         Alert.alert(
           'Koneksi Tidak Aktif',
-          'Aktifkan koneksi internet untuk mengunduh laporan Excel.'
+          'Aktifkan koneksi internet untuk mengunduh laporan Excel.',
         );
       } else {
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Data');
 
-        const wbout = XLSX.write(wb, { type: 'binary', bookType: 'xlsx' });
+        const wbout = XLSX.write(wb, {type: 'binary', bookType: 'xlsx'});
         const path = `${RNFS.DownloadDirectoryPath}/data_laporan.xlsx`;
 
         RNFS.writeFile(path, wbout, 'ascii')
@@ -120,10 +122,9 @@ export default function DataLaporan({ navigation }) {
       console.log('barcode : ', result);
       if (result !== null) {
         navigation.navigate('PetaniDetail', {
-          id_petani: result
-        })
+          id_petani: result,
+        });
       }
-
     });
   };
 
@@ -137,28 +138,52 @@ export default function DataLaporan({ navigation }) {
   //   item.nama?.toLowerCase().includes(search.toLowerCase())
   // );
 
-  const MyList = ({ label, value }) => {
+  const MyList = ({label, value}) => {
     return (
-
-      <View style={{ flexDirection: 'row', marginBottom: 6 }}>
-        <Text style={{ flex: 1, fontSize: 12, fontFamily: fonts.primary[400], color: colors.black }}>
+      <View style={{flexDirection: 'row', marginBottom: 6}}>
+        <Text
+          style={{
+            flex: 1,
+            fontSize: 12,
+            fontFamily: fonts.primary[400],
+            color: colors.black,
+          }}>
           {label}
         </Text>
-        <Text style={{ flex: 1, fontSize: 12, fontFamily: fonts.primary[600], color: colors.primary }}>
+        <Text
+          style={{
+            flex: 1,
+            fontSize: 12,
+            fontFamily: fonts.primary[600],
+            color: colors.primary,
+          }}>
           {value}
         </Text>
       </View>
+    );
+  };
 
-
-    )
-  }
+  const deleteAll = () => {
+    Alert.alert('Konfirmasi', 'Yakin ingin menghapus Semua Data Transaksi ?', [
+      {text: 'Batal', style: 'cancel'},
+      {
+        text: 'Hapus',
+        style: 'destructive',
+        onPress: async () => {
+          storeData('transaksi', []);
+          Alert.alert(MYAPP, 'Transaksi berhasil dihapus !');
+          getLaporan();
+        },
+      },
+    ]);
+  };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.white }}>
+    <View style={{flex: 1, backgroundColor: colors.white}}>
       <MyHeader title="Data Laporan" />
 
       {/* Search & Scan Placeholder */}
-      <View style={{ flexDirection: 'row', padding: 10, gap: 20, marginTop: 10 }}>
+      <View style={{flexDirection: 'row', padding: 10, gap: 20, marginTop: 10}}>
         <View
           style={{
             flex: 1,
@@ -177,15 +202,16 @@ export default function DataLaporan({ navigation }) {
               marginLeft: 10,
               fontFamily: fonts.primary[400],
               color: colors.black,
-
             }}
             value={search}
             onChangeText={x => {
               setSearch(x);
               if (x.length > 0) {
-                const filteredData = data.filter(i => i.nama.toLowerCase().indexOf(x.toLowerCase()) > -1);
+                const filteredData = data.filter(
+                  i => i.nama.toLowerCase().indexOf(x.toLowerCase()) > -1,
+                );
                 if (filteredData.length > 0) {
-                  setData(filteredData)
+                  setData(filteredData);
                 }
               } else {
                 getLaporan();
@@ -204,95 +230,155 @@ export default function DataLaporan({ navigation }) {
         </TouchableOpacity>
       </View>
 
-
-      <View style={{ padding: 20, flex: 1 }}>
+      <View style={{padding: 20, flex: 1}}>
         {/* {filteredData.length === 0 && (
             <Text style={{ fontStyle: 'italic', textAlign: 'center' }}>
               Tidak ada data sesuai pencarian
             </Text>
           )} */}
-        <FlatList data={data} renderItem={({ item, index }) => {
-          console.log(item)
-          return (
-            <View
-              key={index}
-              style={{
-                borderRadius: 16,
-                backgroundColor: '#FAFAFA',
-                borderColor: '#ddd',
-                borderWidth: 1,
-                padding: 16,
-                marginBottom: 16,
-              }}>
-              <MyList label="Tipe Transaksi" value={item.tipe} />
+        <FlatList
+          data={data}
+          renderItem={({item, index}) => {
+            console.log(item);
+            return (
+              <View
+                key={index}
+                style={{
+                  borderRadius: 16,
+                  backgroundColor: '#FAFAFA',
+                  borderColor: '#ddd',
+                  borderWidth: 1,
+                  padding: 16,
+                  marginBottom: 16,
+                }}>
+                <MyList label="Tipe Transaksi" value={item.tipe} />
 
-              <MyList label="Tanggal" value={moment(item.tanggal).format('DD MMMM YYYY')} />
-              {item.tipe == 'Kakao' && <MyList label="Beban Beban Lain" value={item.beban} />}
-              <MyList label="Petani" value={item.id_petani + ' - ' + item.nama} />
+                <MyList
+                  label="Tanggal"
+                  value={moment(item.tanggal).format('DD MMMM YYYY')}
+                />
+                {item.tipe == 'Kakao' && (
+                  <MyList label="Beban Beban Lain" value={item.beban} />
+                )}
+                <MyList
+                  label="Petani"
+                  value={item.id_petani + ' - ' + item.nama}
+                />
 
-              <MyList label="Kas/Modal Awal" value={'Rp' + new Intl.NumberFormat('id-ID').format(item.kasAwal)} />
-              <MyList label={item.tipe == 'Kakao' ? 'Timbangan (Kg)' : 'Item'} value={item.timbangan} />
-              <MyList label="Inventory" value={item.inventory} />
-              <MyList label={item.tipe == 'Kakao' ? 'Pemasukan' : 'Penjualan'} value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pemasukan)} />
-              {item.tipe !== 'Kakao' && <MyList label="Nama Barang" value={item.barang} />}
+                <MyList
+                  label="Kas/Modal Awal"
+                  value={
+                    'Rp' + new Intl.NumberFormat('id-ID').format(item.kasAwal)
+                  }
+                />
+                <MyList
+                  label={item.tipe == 'Kakao' ? 'Timbangan (Kg)' : 'Item'}
+                  value={item.timbangan}
+                />
+                <MyList label="Inventory" value={item.inventory} />
+                <MyList
+                  label={item.tipe == 'Kakao' ? 'Pemasukan' : 'Penjualan'}
+                  value={
+                    'Rp' + new Intl.NumberFormat('id-ID').format(item.pemasukan)
+                  }
+                />
+                {item.tipe !== 'Kakao' && (
+                  <MyList label="Nama Barang" value={item.barang} />
+                )}
 
-              {item.tipe !== 'Kakao' && <MyList label="Poin" value={item.poinku} />}
-              <MyList label={item.tipe == 'Kakao' ? 'Pengeluaran' : 'Pembelian'} value={'Rp' + new Intl.NumberFormat('id-ID').format(item.pengeluaran)} />
-              <MyList label="Kas/Modal   " value={'Rp' + new Intl.NumberFormat('id-ID').format(item.kasModal)} />
-              {/* <MyList label="Poin" value={item.poin} /> */}
-              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
-                <TouchableOpacity
-                  style={{ marginRight: 10 }}
-                  onPress={() => {
-                    navigation.navigate('EditTransaksi', item)
+                {item.tipe !== 'Kakao' && (
+                  <MyList label="Poin" value={item.poinku} />
+                )}
+                <MyList
+                  label={item.tipe == 'Kakao' ? 'Pengeluaran' : 'Pembelian'}
+                  value={
+                    'Rp' +
+                    new Intl.NumberFormat('id-ID').format(item.pengeluaran)
+                  }
+                />
+                <MyList
+                  label="Kas/Modal   "
+                  value={
+                    'Rp' + new Intl.NumberFormat('id-ID').format(item.kasModal)
+                  }
+                />
+                {/* <MyList label="Poin" value={item.poin} /> */}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'flex-end',
+                    marginTop: 10,
                   }}>
-                  <Icon name="pencil" type="ionicon" size={20} color="#F5A623" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    Alert.alert(
-                      'Konfirmasi',
-                      'Hapus data ini?',
-                      [
-                        { text: 'Batal' },
-                        {
-                          text: 'Hapus',
-                          style: 'destructive',
-                          onPress: async () => {
-                            const baru = [...data];
-                            baru.splice(index, 1);
-                            await AsyncStorage.setItem('transaksi', JSON.stringify(baru));
-                            setData(baru);
+                  <TouchableOpacity
+                    style={{marginRight: 10}}
+                    onPress={() => {
+                      navigation.navigate('EditTransaksi', item);
+                    }}>
+                    <Icon
+                      name="pencil"
+                      type="ionicon"
+                      size={20}
+                      color="#F5A623"
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      Alert.alert(
+                        'Konfirmasi',
+                        'Hapus data ini?',
+                        [
+                          {text: 'Batal'},
+                          {
+                            text: 'Hapus',
+                            style: 'destructive',
+                            onPress: async () => {
+                              const baru = [...data];
+                              baru.splice(index, 1);
+                              await AsyncStorage.setItem(
+                                'transaksi',
+                                JSON.stringify(baru),
+                              );
+                              setData(baru);
+                            },
                           },
-                        },
-                      ],
-                      { cancelable: true }
-                    );
-                  }}>
-                  <Icon name="trash" type="ionicon" size={20} color="#FF3B30" />
-                </TouchableOpacity>
+                        ],
+                        {cancelable: true},
+                      );
+                    }}>
+                    <Icon
+                      name="trash"
+                      type="ionicon"
+                      size={20}
+                      color="#FF3B30"
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          )
-        }} />
-
+            );
+          }}
+        />
       </View>
 
-
       {/* Tombol Download Excel */}
-      <View style={{ paddingHorizontal: 10, backgroundColor: 'white' }}>
-        <View style={{
-          flexDirection: 'row',
-          padding: 10,
-        }}>
-          <Text style={{
-            flex: 1,
-            fontFamily: fonts.secondary[600],
-          }}>Total Timbangan</Text>
-          <Text style={{
-
-            fontFamily: fonts.secondary[800],
-          }}>{berat} kg</Text>
+      <View style={{paddingHorizontal: 10, backgroundColor: 'white'}}>
+        <View
+          style={{
+            flexDirection: 'row',
+            padding: 10,
+          }}>
+          <Text
+            style={{
+              flex: 1,
+              fontFamily: fonts.secondary[600],
+            }}>
+            Total Timbangan
+          </Text>
+          <Text
+            style={{
+              fontFamily: fonts.secondary[800],
+            }}>
+            {berat} kg
+          </Text>
         </View>
         <TouchableNativeFeedback onPress={downloadExcel}>
           <View
@@ -305,7 +391,12 @@ export default function DataLaporan({ navigation }) {
               justifyContent: 'center',
               flexDirection: 'row',
             }}>
-            <Icon type="ionicon" name="download" color={colors.white} size={20} />
+            <Icon
+              type="ionicon"
+              name="download"
+              color={colors.white}
+              size={20}
+            />
             <Text
               style={{
                 fontFamily: fonts.primary[600],
@@ -317,6 +408,11 @@ export default function DataLaporan({ navigation }) {
             </Text>
           </View>
         </TouchableNativeFeedback>
+        <MyButton
+          onPress={deleteAll}
+          warna={colors.danger}
+          title="Hapus Semua Transaksi"
+        />
       </View>
 
       {/* Modal Edit */}
@@ -335,14 +431,20 @@ export default function DataLaporan({ navigation }) {
               borderRadius: 16,
               width: '90%',
             }}>
-            <Text style={{ fontFamily: fonts.primary[600], fontSize: 16, marginBottom: 10 }}>
+            <Text
+              style={{
+                fontFamily: fonts.primary[600],
+                fontSize: 16,
+                marginBottom: 10,
+              }}>
               Edit Transaksi
             </Text>
 
-
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-              <TouchableOpacity onPress={() => setEditVisible(false)} style={{ marginRight: 10 }}>
-                <Text style={{ color: '#666' }}>Batal</Text>
+            <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+              <TouchableOpacity
+                onPress={() => setEditVisible(false)}
+                style={{marginRight: 10}}>
+                <Text style={{color: '#666'}}>Batal</Text>
               </TouchableOpacity>
               <TouchableNativeFeedback onPress={simpanEdit}>
                 <View
@@ -352,7 +454,11 @@ export default function DataLaporan({ navigation }) {
                     paddingVertical: 8,
                     borderRadius: 10,
                   }}>
-                  <Text style={{ color: colors.white, fontFamily: fonts.primary[600] }}>
+                  <Text
+                    style={{
+                      color: colors.white,
+                      fontFamily: fonts.primary[600],
+                    }}>
                     Simpan
                   </Text>
                 </View>
